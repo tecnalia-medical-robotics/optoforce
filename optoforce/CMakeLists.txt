@@ -50,7 +50,22 @@ add_executable(sample_config_force_acq examples/example_config_acquisition.cpp)
 target_link_libraries(sample_config_force_acq optoforce  ${Boost_LIBRARIES} yaml-cpp)
 
 
+# Define headers for this library. PUBLIC headers are used for
+# compiling the library, and will be added to consumers' build
+# paths.
+target_include_directories(optoforce PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE src)
 
+install(TARGETS optoforce
+    ARCHIVE  DESTINATION lib
+    LIBRARY  DESTINATION lib
+    RUNTIME  DESTINATION bin)  # This is for Windows
+install(DIRECTORY include/ DESTINATION include)
+
+# This makes the project importable from the build directory
+export(TARGETS optoforce FILE optoforceConfig.cmake)
 
 
 
