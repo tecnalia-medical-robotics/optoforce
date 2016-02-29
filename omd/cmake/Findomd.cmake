@@ -1,6 +1,5 @@
-
-set(omd_LIBRARIES "/home/anthony/code/c++/sarafun/optoforce/omd/lib/linux/libOMD.so")
-set(omd_INCLUDE_DIRS "/home/anthony/code/c++/sarafun/optoforce/omd/include")
+set(omd_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/../lib/linux/libOMD.so")
+set(omd_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/../include")
 
 include(FindPackageHandleStandardArgs)
 # Handle the QUIETLY and REQUIRED arguments and set the LM_SENSORS_FOUND to TRUE

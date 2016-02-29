@@ -35,6 +35,7 @@ message(" Just to know: ${CMAKE_MODULE_PATH}")
 find_package(omd)
 
 add_library(optoforce STATIC ${SOURCES})
+message("omd_include  is ${omd_INCLUDE_DIRS}")
 include_directories(${omd_INCLUDE_DIRS})
 
 target_link_libraries(optoforce ${omd_LIBRARIES})
