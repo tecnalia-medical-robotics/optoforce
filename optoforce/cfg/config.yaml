@@ -1,0 +1,5 @@
+num_samples: 20
+devices:
+  - name: "68 v1.1"
+    calibration: [1,1,1]
+  
