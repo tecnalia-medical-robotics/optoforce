@@ -1,18 +1,11 @@
 project(omd)
 
-#set (omd_library ${CMAKE_CURRENT_SOURCES_DIR}/lib PARENT_SCOPE)
-#set (omd ${CMAKE_CURRENT_SOURCES_DIR}/lib)
-# Creates folder "libraries" and adds target project (math.vcproj)
-#set_property(TARGET omd PROPERTY FOLDER "libraries")
 include_directories(include)
-#add_library(OMD STATIC IMPORTED)
-message("omd being prepared... ${CMAKE_BINARY_DIR}/lib/")
-message("omd being prepared... ${omd_SOURCE_DIR}/lib/linux/libOMD.so")
-add_library(OMD SHARED IMPORTED)
-set_property(TARGET OMD PROPERTY IMPORTED_LOCATION ${omd_SOURCE_DIR}/lib/linux/libOMD.so)
-set_property(TARGET OMD PROPERTY INCLUDE_DIRECTORIES "${omd_SOURCE_DIR}/include")
-#target_include_directories(OMD PRIVATE ${omd_SOURCE_DIR}/include)
-#set_property(TARGET OMD PROPERTY IMPORTED_LOCATION ${OMD_SOURCE_DIR}/lib/linux/libOMD.a)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-message("omd path defined ${CMAKE_CURRENT_LIST_DIR}")
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+#find_package(omd)
+
+# Would have thought this solution would be enough .. to be investigated
+#message("omd path defined ${CMAKE_CURRENT_LIST_DIR}")
+#set(omd_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/lib/linux/libOMD.so")
+#set(omd_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
