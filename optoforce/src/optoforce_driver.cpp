@@ -104,7 +104,7 @@ bool OptoForceDriver::getData(std::vector<float> & val, int p_iSensorIndex )
   if (iSize == 0) 
   {
     std::cout << "No new data could be read! (3D)" << std::endl << std::flush;
-    return true;
+    return false;
   }
 
   // now we can assume the value is > 0

@@ -67,14 +67,17 @@ bool OptoForceArrayDriver::WaitUntilPortsFound(unsigned long p_timeOut)
   for (unsigned long num_trial = 0; num_trial < p_timeOut; num_trial++)
   {
     nb_port = GetFoundPortsCount();
+    std::cout << "\r[" << num_trial << "/" << p_timeOut<< "]" << "num port found: " << nb_port << std::flush;
+
     if (nb_port == m_PortCount)
     {
+      std::cout << std::endl;
       return true;
     }
-    if (num_trial > p_timeOut)
-      return false;
-    std::cout << "\r[" << num_trial << "/" << p_timeOut<< "]" << "num port found: " << nb_port << std::flush;
+
     Sleep(10); // To  not use all CPU resources
   }
+
+  std::cout << std::endl;
   return false;
 }

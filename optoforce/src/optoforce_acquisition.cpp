@@ -71,7 +71,7 @@ bool OptoforceAcquisition::initDevices(const int nb_devices)
       else
         std::cout << "6D sensor" << std::endl;
       std::cout << "*******************************" << std::endl;
-
+      new_device->setFrequency(speed_1000hz);
       devices_.push_back(new_device);
     }
     else
@@ -82,7 +82,7 @@ bool OptoforceAcquisition::initDevices(const int nb_devices)
         "*******************************" << std::endl << std::flush;
       delete new_device;
     }
-
+  }
     // per default, we record all data
     devices_recorded_ = devices_;
 
@@ -96,7 +96,6 @@ bool OptoforceAcquisition::initDevices(const int nb_devices)
 
     closeDevices();
     return false;
-  }
 }
 
 bool OptoforceAcquisition::reorderDevices(const std::vector<std::string> &lserial_number)
@@ -228,7 +227,7 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
       data_acquired_[i].push_back(values);
     }
     std::cout << std::endl;
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
     //Sleep(20);
     mutex_.lock();
     is_stop_request = is_stop_request_;
