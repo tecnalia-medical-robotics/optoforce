@@ -68,6 +68,89 @@ void OptoForceDriver::closeDevice()
  * which sensor data we want to read (e.g. if we have a 4 channel DAQ then
  * we can read the 3th sensor's data with p_iSensorIndex = 2).
  * if we have a 6D sensor the p_iSensorIndex is ignored.
+ * val: returned vector
+ *      returned vector is basically a list. A list of vectors with Force Data
+ *      First vector in the list represents oldest data in time
+ */
+bool OptoForceDriver::getData(std::vector< std::vector<float> > & val, int p_iSensorIndex )
+{
+  // Here we can do anything with our Device (e.g. read data)
+  if (!isOpen())
+  {
+    return false;
+  }
+  val.clear();
+
+  // depending on the type, we may read either the first format or the second one
+  OptoPackage package3d;
+  OptoPackage6D *package6d = NULL;
+  int iSize;
+
+  if (is_3D_sensor_)
+  {
+    // We have a 3D sensor
+    // The 3th parameter set to false clears the DAQ's internal buffer.
+    iSize = daq_->read(package3d, p_iSensorIndex, false);
+  }
+  else
+  {
+    // We have a 6D sensor
+    // Read last Data available on the Buffer
+    iSize = daq_->readAll6D(package6d, false);
+  }
+
+  if (iSize < 0)
+  {
+    if (iSize == -1)
+      std::cerr << "Buffer is full" << std::endl;
+    else if (iSize == -2)
+      std::cerr << "DAQ is Closed" << std::endl;
+
+    // Something went wrong, please read the online documentation about error codes. (http://www.optoforce.com/software/API/apidoc/)
+    return false;
+  }
+
+  if (iSize == 0)
+  {
+    //std::cout << "No new data could be read! (3D)" << std::endl << std::flush;
+    return false;
+  }
+
+  if (iSize > 0)
+  {
+    for (int i = 0; i < iSize; i++)
+    {
+      std::vector<float> data;
+      data.clear();
+
+      if (is_3D_sensor_)
+      {
+        data.push_back(package3d.x * factor_[0]);
+        data.push_back(package3d.y * factor_[1]);
+        data.push_back(package3d.z * factor_[2]);
+      }
+      else
+      {
+        data.push_back(package6d[i].Fx * factor_[0]);
+        data.push_back(package6d[i].Fy * factor_[1]);
+        data.push_back(package6d[i].Fz * factor_[2]);
+        data.push_back(package6d[i].Tx * factor_[3]);
+        data.push_back(package6d[i].Ty * factor_[4]);
+        data.push_back(package6d[i].Tz * factor_[5]);
+      }
+      val.push_back(data);
+    }
+  }
+  return true;
+}
+
+
+
+/*
+ * This function reads data from our DAQ. The p_iSensorIndex tells the API
+ * which sensor data we want to read (e.g. if we have a 4 channel DAQ then
+ * we can read the 3th sensor's data with p_iSensorIndex = 2).
+ * if we have a 6D sensor the p_iSensorIndex is ignored.
  */
 bool OptoForceDriver::getData(std::vector<float> & val, int p_iSensorIndex )
 {
@@ -92,6 +175,7 @@ bool OptoForceDriver::getData(std::vector<float> & val, int p_iSensorIndex )
   else
   {
     // We have a 6D sensor
+    // Read last Data available on the Buffer
     iSize = daq_->read6D(package6d, false);
   }
   
@@ -108,7 +192,6 @@ bool OptoForceDriver::getData(std::vector<float> & val, int p_iSensorIndex )
   }
 
   // now we can assume the value is > 0
-  
   if (is_3D_sensor_) 
   {
     val.push_back(package3d.x * factor_[0]);

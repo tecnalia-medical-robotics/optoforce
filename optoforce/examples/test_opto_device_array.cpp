@@ -119,9 +119,35 @@ int main(int argc, char* argv[])
       delete newDevice;
     }
   }
+
   std::vector<float> values;
+  std::vector< std::vector<float> > data;
   // Do some operations with the devices
-  for (unsigned int i = 0; i < 1000; ++i) {
+
+  // 1.- Set Transmission Speed
+  devices6D[0]->setFrequency(speed_1000hz);
+
+  int packet_counter = 0;
+  int it_counter = 0;
+  int lost_counter = 0;
+
+  double loop_start_time, loop_end_time, loop_current_time;
+  timespec current_timespec;
+  clock_gettime(CLOCK_REALTIME, &current_timespec);
+
+  loop_start_time = (double)current_timespec.tv_sec+current_timespec.tv_nsec/1000000000.0;
+  loop_current_time = loop_start_time;
+
+  // Make an initial acquisition to delete buffer
+  devices6D[0]->getData(data);
+
+  float acq_time = 5;
+  int sleep_time = 1000;
+  std::cout << "Start Acquisition" << std::endl;
+  //for (unsigned int i = 0; i < 10000; ++i)
+  while ( (loop_current_time-loop_start_time) <= acq_time)
+  {
+    /*
     std::cout << "[ iteration "  << i <<  "]"<< std::endl;
     int device_id = 0;
     for (std::vector<OptoForceDriver *>::iterator it = devices3D.begin(); it != devices3D.end(); ++it) {
@@ -139,18 +165,68 @@ int main(int argc, char* argv[])
       }
     }
     std::cout << std::endl;
-
+    */
     for (std::vector<OptoForceDriver *>::iterator it = devices6D.begin(); it != devices6D.end(); ++it) {
       OptoForceDriver * device = *it;
-      device->getData(values);
 
+      // Get last Data on the buffer
+      /*
+      device->getData(values);
       for (unsigned int j = 0; j < values.size(); ++j)
         std::cout << values[j] << " ";
       std::cout << std::endl;
+      */
+
+      if (!device->getData(data))
+      {
+        lost_counter = lost_counter +1;
+      }
+      else
+      {
+        std::cout << "size: " << data.size() << std::endl;
+        //counter = counter + data.size();
+        packet_counter = packet_counter + data.size();
+
+        /*
+        for (unsigned int i = 0; i < data.size(); i++)
+        {
+          std::cout << "counter_" << counter << ":\t";
+          for (unsigned int j = 0; j < data[i].size(); j++)
+          {
+            std::cout << data[i][j] << " ";
+          }
+          std::cout << std::endl;
+
+          packet_counter = packet_counter +1;
+        }*/
+      }
     }
+    Sleep(sleep_time);
     // Wait some time for new data
-    Sleep(20);
+    clock_gettime(CLOCK_REALTIME, &current_timespec);
+    loop_current_time = (double)current_timespec.tv_sec+current_timespec.tv_nsec/1000000000.0;
+    //std::cout << "loop time: " << loop_current_time -  loop_start_time<< std::endl;
+
+    it_counter = it_counter +1;
   }
+
+  //make a las reading
+  std::cout << "packet_counter before last: " << packet_counter << std::endl;
+  devices6D[0]->getData(data);
+  packet_counter = packet_counter + data.size();
+  std::cout << "packet_counter after  last: " << packet_counter << std::endl;
+
+  clock_gettime(CLOCK_REALTIME, &current_timespec);
+  loop_end_time = (double)current_timespec.tv_sec+current_timespec.tv_nsec/1000000000.0;
+
+  double loop_time = loop_end_time-loop_start_time;
+  std::cout << "packet_counter:  " << packet_counter << std::endl;
+  std::cout << "packet_expected: " << (loop_time*1000) << std::endl;
+  std::cout << "it_counter: " << it_counter << std::endl;
+  std::cout << "elapsed time: " << loop_time << std::endl;
+  std::cout << "lost packets: " << lost_counter << std::endl;
+
+
 
   // Release all the resources
   for (std::vector<OptoForceDriver *>::iterator it = devices3D.begin(); it != devices3D.end(); ++it) {

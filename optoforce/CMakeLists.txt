@@ -49,6 +49,9 @@ target_link_libraries(sample_force_acq optoforce ${Boost_LIBRARIES})
 add_executable(sample_config_force_acq examples/example_config_acquisition.cpp)
 target_link_libraries(sample_config_force_acq optoforce  ${Boost_LIBRARIES} yaml-cpp)
 
+add_executable(test_opto_device_array examples/test_opto_device_array.cpp)
+target_link_libraries(test_opto_device_array optoforce  ${Boost_LIBRARIES} yaml-cpp)
+
 
 # Define headers for this library. PUBLIC headers are used for
 # compiling the library, and will be added to consumers' build

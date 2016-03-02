@@ -41,6 +41,17 @@ public:
     \return true if some values could be read
    */
   bool getData(std::vector<float> & val, int p_iSensorIndex = 0);
+
+  /*!
+    \brief  get buffer of data. This buffer contains all data between two calls to this function
+    \param  val return parameter as a vector. Read values
+            Returned vector is basically a list. A list of vectors with Force Data
+            First vector in the list represents oldest data in time
+    \param  p_iSensorIndex to select the 3d sensor when several are connected on a single daq
+    \return true if some values could be read
+   */
+  bool getData(std::vector< std::vector<float> > & val, int p_iSensorIndex = 0);
+
   //! whether or not a connecteion with a daq is active
   bool isOpen() const;
   /*!
