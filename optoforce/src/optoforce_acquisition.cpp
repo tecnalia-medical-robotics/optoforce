@@ -17,7 +17,8 @@
 OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
                                                is_stop_request_(false),
-                                               max_num_samples_(500)
+                                               max_num_samples_(500),
+                                               acqusition_freq_(1000)
 {
 
 }
@@ -227,7 +228,7 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
       data_acquired_[i].push_back(values);
     }
     std::cout << std::endl;
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acqusition_freq_));
     //Sleep(20);
     mutex_.lock();
     is_stop_request = is_stop_request_;
@@ -399,3 +400,40 @@ bool OptoforceAcquisition::storeData()
   file_handler.close();
 }
 
+// TODO set frequcny to all devices?
+bool OptoforceAcquisition::setSensorSpeed(int freq)
+{
+  //std::cout << "[OptoforceAcquisition::setSensorSpeed] freq choosed: " << freq << std::endl;
+
+  unsigned int frequency = 0;
+
+  switch (freq)
+  {
+    case 1000:
+      frequency = speed_1000hz;
+      break;
+    case 333:
+      frequency = speed_333hz;
+      break;
+    case 100:
+      frequency = speed_100hz;
+    case 30:
+      frequency = speed_30hz;
+      break;
+    default:
+      std::cout << "[OptoforceAcquisition::setSensorSpeed] Not valid freq choosed" << std::endl;
+      return false;
+  }
+  bool state = true;
+  for (size_t i = 0; i < devices_recorded_.size(); ++i)
+  {
+    state  = state & devices_recorded_[i]->setFrequency((sensor_speed)frequency);
+  }
+
+  return state;
+}
+
+void OptoforceAcquisition::setAcquisitionFrequency(int freq)
+{
+  acqusition_freq_ = freq;
+}

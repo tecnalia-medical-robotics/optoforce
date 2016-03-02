@@ -83,6 +83,20 @@ public:
    */
   bool setDeviceCalibration(const std::string & serial_number, const std::vector<float> & calib);
 
+  /*!
+    \brief to set acqusisition speed of the optoforce device
+    \param freq acquisition frequency in Hz. Valid frequencies are: 33Hz, 100Hz, 333Hz, 1000Hz
+   */
+  bool setSensorSpeed(int freq);
+
+  /*!
+    \brief Set Acquisition Frequency
+    \param  freq acquisition frequency in Hz.
+            This frequency determines how often we get a new data. Independently from Sensor Transmission Rate
+   */
+  void setAcquisitionFrequency(int freq);
+
+
 private:
   //! enumerator of available devices
   OptoForceArrayDriver * device_enumerator_;
@@ -104,6 +118,8 @@ private:
   int num_samples_;
   //! maximum number of samples
   const int max_num_samples_;
+  //! acquisition frequency
+  int acqusition_freq_;
 };
 
 #endif // OPTOFORCE_ACQUISITION_HPP
