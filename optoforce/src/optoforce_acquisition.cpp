@@ -203,6 +203,7 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
   }
   // to store the values of a device
   std::vector<float> values;
+  std::vector< std::vector<float> > buffered_values;
 
   bool is_stop_request = false;
 
@@ -210,22 +211,33 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
   if (desired_num_samples != -1)
     max_samples = desired_num_samples;
 
-  for (num_samples_ = 0; (num_samples_ < max_samples) && !is_stop_request; ++num_samples_)
+  //for (num_samples_ = 0; (num_samples_ < max_samples) && !is_stop_request; ++num_samples_)
+  std::cout << "samples to read: " << max_samples << std::endl;
+  num_samples_ = 0;
+  while ((num_samples_ < max_samples) && !is_stop_request)
   {
     for (size_t i = 0; i < devices_recorded_.size(); ++i)
     {
       values.clear();
-
-      if (devices_recorded_[i]->getData(values))
+      buffered_values.clear();
+      if (devices_recorded_[i]->getData(buffered_values))
       {
-        for (unsigned int j = 0; j < values.size(); ++j)
-          std::cout << values[j] << " ";
+        num_samples_ = num_samples_ + buffered_values.size();
+
+        for (unsigned int j = 0; j < buffered_values.size(); ++j)
+        {
+          data_acquired_[i].push_back(buffered_values[j]);
+
+          //for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
+            //std::cout << buffered_values[j][k] << " ";
+
+        }
       }
       else
       {
         std::cerr << "\n Prb while reading the sensor data " << i << std::endl;
       }
-      data_acquired_[i].push_back(values);
+      //data_acquired_[i].push_back(values);
     }
     std::cout << std::endl;
     boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acqusition_freq_));
