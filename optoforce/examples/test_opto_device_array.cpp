@@ -131,19 +131,22 @@ int main(int argc, char* argv[])
   int it_counter = 0;
   int lost_counter = 0;
 
+  // Acquisition time configuration
+  float acq_time = 10;
+  int sleep_time = 10; // in milliseconds
+
+  // Make an initial acquisition to empty buffer
+  devices6D[0]->getData(data);
+
+  // Get initial time
   double loop_start_time, loop_end_time, loop_current_time;
   timespec current_timespec;
-  clock_gettime(CLOCK_REALTIME, &current_timespec);
 
+  clock_gettime(CLOCK_REALTIME, &current_timespec);
   loop_start_time = (double)current_timespec.tv_sec+current_timespec.tv_nsec/1000000000.0;
   loop_current_time = loop_start_time;
 
-  // Make an initial acquisition to delete buffer
-  devices6D[0]->getData(data);
-
-  float acq_time = 5;
-  int sleep_time = 1000;
-  std::cout << "Start Acquisition" << std::endl;
+  //std::cout << "Start Acquisition" << std::endl;
   //for (unsigned int i = 0; i < 10000; ++i)
   while ( (loop_current_time-loop_start_time) <= acq_time)
   {
@@ -180,10 +183,11 @@ int main(int argc, char* argv[])
       if (!device->getData(data))
       {
         lost_counter = lost_counter +1;
+        std::cout << "\rno data received " << std::flush;
       }
       else
       {
-        std::cout << "size: " << data.size() << std::endl;
+        //std::cout << "\rsize: " << data.size() << std::flush;
         //counter = counter + data.size();
         packet_counter = packet_counter + data.size();
 
@@ -210,21 +214,23 @@ int main(int argc, char* argv[])
     it_counter = it_counter +1;
   }
 
-  //make a las reading
-  std::cout << "packet_counter before last: " << packet_counter << std::endl;
+  // Make last reading to correctly calculate relation between packet/time
   devices6D[0]->getData(data);
   packet_counter = packet_counter + data.size();
-  std::cout << "packet_counter after  last: " << packet_counter << std::endl;
 
   clock_gettime(CLOCK_REALTIME, &current_timespec);
   loop_end_time = (double)current_timespec.tv_sec+current_timespec.tv_nsec/1000000000.0;
 
   double loop_time = loop_end_time-loop_start_time;
-  std::cout << "packet_counter:  " << packet_counter << std::endl;
-  std::cout << "packet_expected: " << (loop_time*1000) << std::endl;
-  std::cout << "it_counter: " << it_counter << std::endl;
-  std::cout << "elapsed time: " << loop_time << std::endl;
-  std::cout << "lost packets: " << lost_counter << std::endl;
+  int lost_packets = (int)(loop_time*1000) - packet_counter;
+
+  std::cout << std::endl << "Summary:  " << std::endl;
+  std::cout << "  packet_received:  " << packet_counter << std::endl;
+  std::cout << "  packet_expected: " << (loop_time*1000) << std::endl;
+  std::cout << "  loop_iterations: " << it_counter << std::endl;
+  std::cout << "  elapsed time: " << loop_time << std::endl;
+  std::cout << "  lost packets: " << lost_packets << std::endl;
+  std::cout << "  lost packets: " << (float)lost_packets/(float)packet_counter * 100.0 << "%" << std::endl;
 
 
 
