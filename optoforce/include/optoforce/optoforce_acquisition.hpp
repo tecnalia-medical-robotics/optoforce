@@ -119,7 +119,7 @@ private:
   //! maximum number of samples
   const int max_num_samples_;
   //! acquisition frequency
-  int acqusition_freq_;
+  int acquisition_freq_;
 };
 
 #endif // OPTOFORCE_ACQUISITION_HPP

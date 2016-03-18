@@ -18,7 +18,7 @@ OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
                                                is_stop_request_(false),
                                                max_num_samples_(500),
-                                               acqusition_freq_(1000)
+                                               acquisition_freq_(1000)
 {
 
 }
@@ -37,6 +37,7 @@ OptoforceAcquisition::~OptoforceAcquisition()
 }
 
 // todo handle the data desallocation on error
+//todo avoid hardcoding the frequency in it.
 bool OptoforceAcquisition::initDevices(const int nb_devices)
 {
   //check if some devices are already connected. If so, just close it
@@ -196,6 +197,7 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
     data_acquired_.clear();
   }
 
+  // flushing the devices.
   for (size_t i = 0; i < devices_recorded_.size(); ++i)
   {
     std::vector<std::vector<float> > val;
@@ -211,37 +213,62 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
   if (desired_num_samples != -1)
     max_samples = desired_num_samples;
 
-  //for (num_samples_ = 0; (num_samples_ < max_samples) && !is_stop_request; ++num_samples_)
   std::cout << "samples to read: " << max_samples << std::endl;
   num_samples_ = 0;
+
+  //for the first one, we just read the last value
+
+  bool is_first = true;
   while ((num_samples_ < max_samples) && !is_stop_request)
   {
+    std::cout << "[" << num_samples_ << "] " ;
     for (size_t i = 0; i < devices_recorded_.size(); ++i)
     {
       values.clear();
       buffered_values.clear();
-      if (devices_recorded_[i]->getData(buffered_values))
+
+      bool is_data_available = true;
+
+      is_data_available = devices_recorded_[i]->getData(buffered_values);
+
+      if (is_data_available)
       {
-        num_samples_ = num_samples_ + buffered_values.size();
-
-        for (unsigned int j = 0; j < buffered_values.size(); ++j)
+        if (is_first)
         {
-          data_acquired_[i].push_back(buffered_values[j]);
+          num_samples_ = num_samples_ + 1;
+          int idx_last = buffered_values.size()- 1;
+          data_acquired_[i].push_back(buffered_values[idx_last]);
+          for (unsigned int k = 0; k < buffered_values[idx_last].size(); ++k)
+            std::cout << buffered_values[idx_last][k] << " ";
+          std::cout << " + ";
+        }
+        else
+        {
+          num_samples_ = num_samples_ + buffered_values.size();
 
-          //for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
-            //std::cout << buffered_values[j][k] << " ";
+          for (unsigned int j = 0; j < buffered_values.size(); ++j)
+          {
+            data_acquired_[i].push_back(buffered_values[j]);
 
+            for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
+              std::cout << buffered_values[j][k] << " ";
+            std::cout << " + ";
+          }
         }
       }
       else
       {
         std::cerr << "\n Prb while reading the sensor data " << i << std::endl;
       }
+      std::cout << " || ";
+
       //data_acquired_[i].push_back(values);
+
     }
     std::cout << std::endl;
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acqusition_freq_));
-    //Sleep(20);
+    is_first = false;
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acquisition_freq_));
+
     mutex_.lock();
     is_stop_request = is_stop_request_;
     mutex_.unlock();
@@ -429,11 +456,12 @@ bool OptoforceAcquisition::setSensorSpeed(int freq)
       break;
     case 100:
       frequency = speed_100hz;
+      break;
     case 30:
       frequency = speed_30hz;
       break;
     default:
-      std::cout << "[OptoforceAcquisition::setSensorSpeed] Not valid freq choosed" << std::endl;
+      std::cout << "[OptoforceAcquisition::setSensorSpeed] Not valid freq " << freq << std::endl;
       return false;
   }
   bool state = true;
@@ -447,5 +475,5 @@ bool OptoforceAcquisition::setSensorSpeed(int freq)
 
 void OptoforceAcquisition::setAcquisitionFrequency(int freq)
 {
-  acqusition_freq_ = freq;
+  acquisition_freq_ = freq;
 }
