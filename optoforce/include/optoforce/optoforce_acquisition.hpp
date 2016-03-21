@@ -25,6 +25,13 @@
 class OptoforceAcquisition
 {
 public:
+  //! basic structure used to stored the values provided by the devices
+  struct SampleStamped
+  {
+    boost::chrono::high_resolution_clock::time_point acq_time;
+    std::vector<float> sample;
+  };
+
   //! basic constructor
   OptoforceAcquisition();
   //! basic destructor
@@ -51,8 +58,6 @@ public:
     \param num_samples number of reading requested (-1 is unlimited)
   */
   bool startRecording(const int num_samples);
-  //! launch the data acquisition (todo: do we keep it?)
-  void acquireData();
   /*!
     \brief acquisition thread
     \param desired_num_samples number of reading requested (-1 is unlimited)
@@ -97,7 +102,6 @@ public:
    */
   void setAcquisitionFrequency(int freq);
 
-
 private:
   //! enumerator of available devices
   OptoForceArrayDriver * device_enumerator_;
@@ -106,7 +110,7 @@ private:
   //! list of devices recorded
   std::vector<OptoForceDriver *> devices_recorded_;
   //! list of values read per connected devices (couldn't we define a structure for the values rea, or reuse the initial one?)
-  std::vector<std::vector< std::vector<float> > > data_acquired_;
+  std::vector<std::vector<SampleStamped> > data_acquired_;
   //! whether or not is being recording data
   bool is_recording_;
   //! whether or not a recording stop is requested
