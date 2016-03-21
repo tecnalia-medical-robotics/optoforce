@@ -183,12 +183,12 @@ bool OptoforceAcquisition::startRecording(const int num_samples)
   is_recording_ = true;
   mutex_.unlock();
 
-  boost::thread t(&OptoforceAcquisition::acquireThread, this, num_samples);
+  boost::thread t(&OptoforceAcquisition::acquireThread, this, num_samples, false);
 
   return true;
 }
 
-void OptoforceAcquisition::acquireThread(const int desired_num_samples)
+void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_debug)
 {
   // double check if the data_acquired variable is empty. If not force it
   if (!data_acquired_.empty())
@@ -197,7 +197,6 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
     data_acquired_.clear();
   }
 
-  // flushing the devices.
   for (size_t i = 0; i < devices_recorded_.size(); ++i)
   {
     std::vector<std::vector<float> > val;
@@ -216,59 +215,96 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
   std::cout << "samples to read: " << max_samples << std::endl;
   num_samples_ = 0;
 
-  //for the first one, we just read the last value
-
+  // for the first one, we just read the last value
+  // so that we flush the internal buffer.
   bool is_first = true;
+
+
+  // this is kept in case we want to store the data acquisition of each information (DATA_STRUCT)
+  // std::vector< std::vector< std::pair<boost::chrono::high_resolution_clock::time_point , std::vector<std::vector<float> > > > > lvalues;
+  // std::pair<boost::chrono::high_resolution_clock::time_point ,std::vector<std::vector<float> > > sensor_read;
+  // for (size_t i = 0; i < devices_recorded_.size(); ++i)
+  // {
+  //  std::vector< std::pair<boost::chrono::high_resolution_clock::time_point ,std::vector<std::vector<float> > >> val;
+  //  lvalues.push_back(val);
+  // }
+
+  // record the start instant
+  boost::chrono::high_resolution_clock::time_point tstart = boost::chrono::high_resolution_clock::now();
+  boost::chrono::high_resolution_clock::time_point tlast  = tstart;
+
   while ((num_samples_ < max_samples) && !is_stop_request)
   {
-    std::cout << "[" << num_samples_ << "] " ;
+    if (is_debug)
+      std::cout << "[" << num_samples_ << "] " ;
     for (size_t i = 0; i < devices_recorded_.size(); ++i)
     {
-      values.clear();
+      //values.clear();
       buffered_values.clear();
 
       bool is_data_available = true;
 
-      is_data_available = devices_recorded_[i]->getData(buffered_values);
+      is_data_available  = devices_recorded_[i]->getData(buffered_values);
+      tlast = boost::chrono::high_resolution_clock::now();
 
       if (is_data_available)
       {
+        // todo: make sure is_data_available is true, and some data is available
         if (is_first)
         {
           num_samples_ = num_samples_ + 1;
+          //todo make sure the lat value is indeed the good one to use.
+          // read the last value of each device, so that we fluch the internal buffer
+
           int idx_last = buffered_values.size()- 1;
           data_acquired_[i].push_back(buffered_values[idx_last]);
-          for (unsigned int k = 0; k < buffered_values[idx_last].size(); ++k)
-            std::cout << buffered_values[idx_last][k] << " ";
-          std::cout << " + ";
+
+          if (is_debug)
+          {
+            for (unsigned int k = 0; k < buffered_values[idx_last].size(); ++k)
+              std::cout << buffered_values[idx_last][k] << " ";
+            std::cout << " + ";
+          }
         }
         else
         {
-          num_samples_ = num_samples_ + buffered_values.size();
+          // see (DATA_STRUCT) comment
+          //sensor_read.first  = boost::chrono::high_resolution_clock::now();
+          //sensor_read.second = buffered_values;
+          //lvalues[i].push_back(sensor_read);
 
           for (unsigned int j = 0; j < buffered_values.size(); ++j)
           {
             data_acquired_[i].push_back(buffered_values[j]);
 
-            for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
-              std::cout << buffered_values[j][k] << " ";
-            std::cout << " + ";
+            if (is_debug)
+            {
+              // displaying the values read.
+              for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
+                std::cout << buffered_values[j][k] << " ";
+              std::cout << " + ";
+            }
           }
         }
       }
       else
       {
-        std::cerr << "\n Prb while reading the sensor data " << i << std::endl;
+        //std::cerr << "\n Prb while reading the sensor data " << i << std::endl;
       }
-      std::cout << " || ";
+      if (is_debug)
+        std::cout << " || ";
 
-      //data_acquired_[i].push_back(values);
+      num_samples_ = std::max(num_samples_,  data_acquired_[i].size());
 
     }
-    std::cout << std::endl;
-    is_first = false;
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acquisition_freq_));
 
+    if (is_debug)
+      std::cout << std::endl;
+
+    is_first = false;
+
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acquisition_freq_));
+    //boost::this_thread::sleep_for(boost::chrono::nanoseconds(500000000/acquisition_freq_));
     mutex_.lock();
     is_stop_request = is_stop_request_;
     mutex_.unlock();
@@ -278,6 +314,39 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples)
   is_recording_ = false;
   mutex_.unlock();
   std::cout << "acquireThread end" << std::endl;
+
+  boost::chrono::nanoseconds acq_time_ns = tlast - tstart;
+
+  std::cout <<" Acquisition time : " << acq_time_ns.count() * 1e-6 << std::endl;
+  std::cout <<"num data acquired: "  << std::endl;
+
+  for (size_t i = 0; i < devices_recorded_.size(); ++i)
+  {
+    std ::cout << "Device["<< i << "]-->"<< data_acquired_[i].size() << std::endl;
+  }
+
+ // see (DATA_STRUCT) comment
+  /* for (int i = 0 ; i < lvalues[i].size(); ++i)
+  {
+    std::cout << "device num " << i << std::endl;
+
+    for (int j = 0; j < lvalues[i].size(); ++j)
+    {
+      boost::chrono::nanoseconds ns = lvalues[i][j].first - tstart;
+
+      std::cout << "[" << ns.count() / 1000000.0 << "]";
+
+      for (unsigned int k = 0; k < lvalues[i][j].second.size(); ++k)
+          {
+            for (unsigned int l = 0; l < lvalues[i][j].second[k].size(); ++l)
+              std::cout << lvalues[i][j].second[k][l] << " ";
+            std::cout << " + ";
+          }
+      std::cout << std::endl;
+    }
+  }
+  */
+
 }
 
 
@@ -367,7 +436,7 @@ void OptoforceAcquisition::acquireData()
 bool OptoforceAcquisition::storeData()
 {
 
-// make sure we are not recording
+ // make sure we are not recording
   bool is_recording;
   mutex_.lock();
   is_recording = is_recording_;
@@ -389,36 +458,34 @@ bool OptoforceAcquisition::storeData()
     boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(
       boost::posix_time::second_clock::local_time() );
 
-  // We only take part of the posix time
-  std::string name_file = boost::posix_time::to_iso_string(posix_time) + "_forces.csv";
-
-  std::cout << "Storing filename: " << name_file << std::endl;
-  std::cout << "Storing " << num_samples_ << " samples" << std::endl;
-
-  std::ofstream file_handler;
-  file_handler.open (name_file);
-  // todo check if the file opening worked
-
-  // prepare the csv format, accroding to the sensor connected
-  std::stringstream oss;
-
   for (size_t i = 0; i < devices_recorded_.size(); ++i)
   {
+    // We only take part of the posix time
+    std::string name_file = boost::posix_time::to_iso_string(posix_time) + "_"
+      + devices_recorded_[i]->getSerialNumber() + "_forces.csv";
+
+    std::cout << "Storing filename: " << name_file << std::endl;
+    std::cout << "Storing " << num_samples_ << " samples" << std::endl;
+
+    std::ofstream file_handler;
+    // todo check if the file opening worked
+    file_handler.open (name_file);
+
+    // prepare the csv format, accroding to the sensor connected
+    std::stringstream oss;
+
     if (devices_recorded_[i]->is3DSensor())
       oss << "f_x;f_y;f_z;";
     else
       oss << "f_x;f_y;f_z;t_x,t_y;t_z;";
-  }
-  std::cout << "csv header would be: " << oss.str() << std::endl;
-  file_handler << oss.str() << std::endl;
 
-  // Storing the data
-  for (size_t s = 0; s < num_samples_; ++s)
-  {
-    oss.str("");
-    for (size_t i = 0; i < devices_recorded_.size(); ++i)
+    file_handler << oss.str() << std::endl;
+
+    // Storing the data
+    for (size_t j = 0; j < data_acquired_[i].size(); ++j)
     {
-      if (data_acquired_[i][s].empty())
+      oss.str("");
+      if (data_acquired_[i][j].empty())
       {
         if (devices_recorded_[i]->is3DSensor())
           oss << ";;;";
@@ -427,16 +494,17 @@ bool OptoforceAcquisition::storeData()
       }
       else
       {
-        for (size_t j = 0 ; j < data_acquired_[i][s].size(); ++j)
+        for (size_t k = 0 ; k < data_acquired_[i][k].size(); ++k)
         {
-          oss << data_acquired_[i][s][j] << ";";
+          oss << data_acquired_[i][j][k] << ";";
         }
       }
+      oss << std::endl;
+      file_handler << oss.str();
     }
-    oss << std::endl;
-    file_handler << oss.str();
+    file_handler.close();
   }
-  file_handler.close();
+  return true;
 }
 
 // TODO set frequcny to all devices?

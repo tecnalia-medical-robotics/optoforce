@@ -56,8 +56,9 @@ public:
   /*!
     \brief acquisition thread
     \param desired_num_samples number of reading requested (-1 is unlimited)
+    \param is_debug whether extra information is displayed during acquisition
    */
-  void acquireThread(const int desired_num_samples);
+  void acquireThread(const int desired_num_samples, bool is_debug = false);
   //! check whether a data acquisition is active
   bool isRecording();
   /*!
@@ -104,7 +105,7 @@ private:
   std::vector<OptoForceDriver *> devices_;
   //! list of devices recorded
   std::vector<OptoForceDriver *> devices_recorded_;
-  //! list of values read per connected devices
+  //! list of values read per connected devices (couldn't we define a structure for the values rea, or reuse the initial one?)
   std::vector<std::vector< std::vector<float> > > data_acquired_;
   //! whether or not is being recording data
   bool is_recording_;
@@ -115,7 +116,7 @@ private:
   //! acquisition thread;
   boost::thread* thread_acq_;
   //! current sample number
-  int num_samples_;
+  size_t num_samples_;
   //! maximum number of samples
   const int max_num_samples_;
   //! acquisition frequency
