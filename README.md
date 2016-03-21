@@ -2,6 +2,7 @@
 The current version of the library is built on the top of the official library of the manufacturer (see [here](http://optoforce.com/support/))
 
 The access to the devices is done in 2 steps:
+
 * all connected devices are first found.
 * any connected devices an then be accessed to get the forces measured 
 
@@ -33,6 +34,7 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 # To do
 Most of the aspects to improve are defined in the code using the flag todo.
 Othe relevant aspect to consider:
+
 * Miguel started a driver in which a dirct access to the devices was done through boost (ie without the optofrce driver)
 * An optoforce library has been developed [there](https://github.com/ethz-asl/liboptoforce)
 * Optoforce developed a ROS node that should be tested as well.
