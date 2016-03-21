@@ -6,7 +6,7 @@ project(optoforce)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-find_package( Boost REQUIRED COMPONENTS program_options system thread date_time)
+find_package( Boost REQUIRED COMPONENTS program_options system thread date_time chrono)
 include_directories( ${Boost_INCLUDE_DIR} )
 
 set(SOURCES "src/optoforce_driver.cpp"
