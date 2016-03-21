@@ -37,4 +37,4 @@ Othe relevant aspect to consider:
 
 * Miguel started a driver in which a dirct access to the devices was done through boost (ie without the optofrce driver)
 * An optoforce library has been developed [there](https://github.com/ethz-asl/liboptoforce)
-* Optoforce developed a ROS node that should be tested as well.
+* Optoforce developed a ROS node that should be tested as well (see [here](http://optoforce.com/support/)).
