@@ -1,4 +1,4 @@
-num_samples: 10000
+num_samples: 120000
 devices:
   - name: "64 v0.9"       # Serial Number of the Device
     calibration: [1,1,1]  # No calibration
