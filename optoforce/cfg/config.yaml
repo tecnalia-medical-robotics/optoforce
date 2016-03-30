@@ -1,5 +1,9 @@
-num_samples: 20
+num_samples: 10000
 devices:
-  - name: "68 v1.1"
-    calibration: [1,1,1]
+  - name: "64 v0.9"       # Serial Number of the Device
+    calibration: [1,1,1]  # No calibration
+    speed: 1000           # in Hz
+  - name: "95 v1.0"       # Serial Number of the Device
+    calibration: [1,1,1]  # No calibration
+    speed: 1000           # in Hz. Aquisition Frequency of OptoForce Sensor Data
   
