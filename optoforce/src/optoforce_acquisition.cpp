@@ -423,9 +423,9 @@ bool OptoforceAcquisition::storeData()
     std::stringstream oss;
 
     if (devices_recorded_[i]->is3DSensor())
-      oss << "t_ms;f_x;f_y;f_z;";
+      oss << "#t_ms;f_x;f_y;f_z;";
     else
-      oss << "t_ms;f_x;f_y;f_z;t_x,t_y;t_z;";
+      oss << "#t_ms;f_x;f_y;f_z;t_x,t_y;t_z;";
 
     file_handler << oss.str() << std::endl;
 
