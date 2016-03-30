@@ -33,9 +33,7 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 # Gnuplot Manual
 
 - Set column separator
-```bash
 set datafile separator ";"
-```
 
 - Set ranges
 ```bash
@@ -53,7 +51,7 @@ set ylabel 'Force'                          # y-axis label
 
 - Plot data. Only 1 Force axis
 ```bash
-plot 'filename.csv' using 1:2 with linMes
+plot 'filename.csv' using 1:2 with lines
 ```
 
 - Plot data. 3 Force axis
