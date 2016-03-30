@@ -14,10 +14,11 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/c_local_time_adjustor.hpp"
 
+// the maximum number of samples is hardcoded to 5min supposing a 1Khz sensor acq
 OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
-                                               is_stop_request_(false),
-                                               max_num_samples_(500),
+                                               is_stop_request_(false),              
+                                               max_num_samples_ (5 * 60 * 1000),
                                                acquisition_freq_(1000)
 {
 
@@ -312,7 +313,7 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
     boost::chrono::nanoseconds acq_all_sample_ns = l_time_last[i] - l_time_start[i];
     boost::chrono::nanoseconds acq_one_sample_ns = boost::chrono::nanoseconds(acq_all_sample_ns.count() / (data_acq[i].size() -1));
 
-    std ::cout << "Device["<< i << "]-->"<< data_acq[i].size() << " samples" << std::endl;
+    std::cout << "Device["<< i << "]-->"<< data_acq[i].size() << " samples" << std::endl;
     std::cout << " Acquisition time : " << acq_all_sample_ns.count() * 1e-6 << std::endl;
     std::cout << " num data acquired: "  << std::endl;
     std::cout << " time per acq: " << acq_one_sample_ns.count() * 1e-6 << std::endl;
@@ -422,6 +423,7 @@ bool OptoforceAcquisition::storeData()
     // prepare the csv format, accroding to the sensor connected
     std::stringstream oss;
 
+    // '#' is for Gnuplot
     if (devices_recorded_[i]->is3DSensor())
       oss << "#t_ms;f_x;f_y;f_z;";
     else
