@@ -34,7 +34,7 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 
 - Set column separator
 
-    set datafile separator ";"
+        set datafile separator ";"
 
 - Set ranges
 ```bash
