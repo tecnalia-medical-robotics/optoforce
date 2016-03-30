@@ -34,31 +34,27 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 
 - Set column separator
 
-        set datafile separator ";"
+    set datafile separator ";"
 
 - Set ranges
-```bash
-set autoscale                          # let gnuplot determine ranges (default)
-set xrange [1:10]
-set yrange [1:100]
-```
+    
+    set autoscale   # let gnuplot determine ranges (default)
+    set xrange [1:10]
+    set yrange [1:100]
 
 - Set labels
-```bash
-set title 'Measured Force'                       # plot title
-set xlabel 'Time'                              # x-axis label
-set ylabel 'Force'                          # y-axis label
-```
+
+    set title 'Measured Force'                       # plot title
+    set xlabel 'Time'                              # x-axis label
+    set ylabel 'Force'                          # y-axis label
 
 - Plot data. Only 1 Force axis
-```bash
-plot 'filename.csv' using 1:2 with lines
-```
+    
+    plot 'filename.csv' using 1:2 with lines
 
 - Plot data. 3 Force axis
-```bash
-plot 'filename.csv' using 1:2 with lines title "Fx", 'filename.csv' using 1:3 with lines title "Fz", 'filename.csv' using 1:4 with lines title "Fz" 
-```
+
+    plot 'filename.csv' using 1:2 with lines title "Fx", 'filename.csv' using 1:3 with lines title "Fz", 'filename.csv' using 1:4 with lines title "Fz" 
 
 # To do
 Most of the aspects to improve are defined in the code using the flag todo.
