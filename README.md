@@ -38,15 +38,19 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 
 - Set ranges
     
-    set autoscale   # let gnuplot determine ranges (default)
+    set autoscale        # let gnuplot determine ranges (default)
+
     set xrange [1:10]
+    
     set yrange [1:100]
 
 - Set labels
 
-    set title 'Measured Force'                       # plot title
-    set xlabel 'Time'                              # x-axis label
-    set ylabel 'Force'                          # y-axis label
+    set title 'Measured Force'      # plot title
+
+    set xlabel 'Time'               # x-axis label
+
+    set ylabel 'Force'              # y-axis label
 
 - Plot data. Only 1 Force axis
     
