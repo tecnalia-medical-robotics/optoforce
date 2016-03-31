@@ -25,6 +25,13 @@
 class OptoforceAcquisition
 {
 public:
+  //! basic structure used to stored the values provided by the devices
+  struct SampleStamped
+  {
+    boost::chrono::high_resolution_clock::time_point acq_time;
+    std::vector<float> sample;
+  };
+
   //! basic constructor
   OptoforceAcquisition();
   //! basic destructor
@@ -51,13 +58,12 @@ public:
     \param num_samples number of reading requested (-1 is unlimited)
   */
   bool startRecording(const int num_samples);
-  //! launch the data acquisition (todo: do we keep it?)
-  void acquireData();
   /*!
     \brief acquisition thread
     \param desired_num_samples number of reading requested (-1 is unlimited)
+    \param is_debug whether extra information is displayed during acquisition
    */
-  void acquireThread(const int desired_num_samples);
+  void acquireThread(const int desired_num_samples, bool is_debug = false);
   //! check whether a data acquisition is active
   bool isRecording();
   /*!
@@ -96,7 +102,6 @@ public:
    */
   void setAcquisitionFrequency(int freq);
 
-
 private:
   //! enumerator of available devices
   OptoForceArrayDriver * device_enumerator_;
@@ -104,8 +109,8 @@ private:
   std::vector<OptoForceDriver *> devices_;
   //! list of devices recorded
   std::vector<OptoForceDriver *> devices_recorded_;
-  //! list of values read per connected devices
-  std::vector<std::vector< std::vector<float> > > data_acquired_;
+  //! list of values read per connected devices (couldn't we define a structure for the values rea, or reuse the initial one?)
+  std::vector<std::vector<SampleStamped> > data_acquired_;
   //! whether or not is being recording data
   bool is_recording_;
   //! whether or not a recording stop is requested
@@ -115,11 +120,11 @@ private:
   //! acquisition thread;
   boost::thread* thread_acq_;
   //! current sample number
-  int num_samples_;
+  size_t num_samples_;
   //! maximum number of samples
   const int max_num_samples_;
   //! acquisition frequency
-  int acqusition_freq_;
+  int acquisition_freq_;
 };
 
 #endif // OPTOFORCE_ACQUISITION_HPP
