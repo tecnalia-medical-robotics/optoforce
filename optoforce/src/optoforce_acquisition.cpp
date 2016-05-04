@@ -21,7 +21,7 @@ OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                max_num_samples_ (5 * 60 * 1000),
                                                acquisition_freq_(1000)
 {
-
+  filename_ = "";
 }
 
 OptoforceAcquisition::~OptoforceAcquisition()
@@ -377,6 +377,12 @@ bool OptoforceAcquisition::stopRecording()
   return true;
 }
 
+void OptoforceAcquisition::setFilename(std::string filename)
+{
+  filename_ = filename;
+}
+
+
 // warning may not be correctly working if acquisition asked while storing
 // todo if no data recorded, get out directly
 // todo agree on a precision for the data stored.
@@ -410,7 +416,8 @@ bool OptoforceAcquisition::storeData()
   for (size_t i = 0; i < devices_recorded_.size(); ++i)
   {
     // We only take part of the posix time
-    std::string name_file = boost::posix_time::to_iso_string(posix_time) + "_"
+    //std::string name_file = boost::posix_time::to_iso_string(posix_time) + "_"
+      std::string name_file = filename_ + "_"
       + devices_recorded_[i]->getSerialNumber() + "_forces.csv";
 
     std::cout << "Storing filename: " << name_file << std::endl;

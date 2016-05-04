@@ -82,6 +82,12 @@ public:
     \return true if the operation succeeded
    */
   bool storeData();
+
+  /*!
+    \brief set filename to store data
+   */
+  void setFilename(std::string filename);
+
   /*!
     \brief to set the calibration data of a device
     \param serial_number the device id
@@ -125,6 +131,8 @@ private:
   const int max_num_samples_;
   //! acquisition frequency
   int acquisition_freq_;
+  //! filename of the stored data
+  std::string filename_;
 };
 
 #endif // OPTOFORCE_ACQUISITION_HPP
