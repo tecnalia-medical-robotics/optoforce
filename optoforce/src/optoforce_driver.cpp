@@ -255,6 +255,7 @@ bool OptoForceDriver::setCalibration(const std::vector<float> & factor)
 
 bool OptoForceDriver::setFiltering(const sensor_filter filter)
 {
+  //std::cout << "[OptoForceDriver::setFiltering] filter: " << filter << std::endl;
   if (!isOpen())
   {
     return false;
@@ -289,4 +290,23 @@ bool OptoForceDriver::setFrequency(const sensor_speed freq)
     return daq_->sendConfig(sensor_config);
   }
   return true;
+}
+
+bool OptoForceDriver::setZeroAll()
+{
+  if (!isOpen())
+  {
+    return false;
+  }
+  daq_->zeroAll();
+  return true;
+}
+bool OptoForceDriver::setZero(int number)
+{
+  if (!isOpen())
+  {
+    return false;
+  }
+  return daq_->zero(number);
+
 }

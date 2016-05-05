@@ -102,6 +102,25 @@ public:
   bool setSensorSpeed(int freq);
 
   /*!
+    \brief to set filter frequency of the optoforce device
+    \param filter_freq filter frequency in Hz. Valid frequencies are: 0Hz, 15Hz, 50Hz, 150Hz
+   */
+  bool setSensorFilter(int filter_freq);
+
+
+  /*!
+    \brief to set Zero of the optoforce device
+    \param
+   */
+  bool setZero(int number);
+
+  /*!
+    \brief to set Zero of All optoforce devices
+    \param
+   */
+  bool setZeroAll();
+
+  /*!
     \brief Set Acquisition Frequency
     \param  freq acquisition frequency in Hz.
             This frequency determines how often we get a new data. Independently from Sensor Transmission Rate

@@ -514,8 +514,55 @@ bool OptoforceAcquisition::setSensorSpeed(int freq)
 
   return state;
 }
+// TODO set filter frequency to all devices?
+bool OptoforceAcquisition::setSensorFilter(int filter_freq)
+{
+  std::cout << "[OptoforceAcquisition::setSensorFilter] filter choosed: " << filter_freq << std::endl;
+
+  unsigned int filter = 0;
+
+  switch (filter_freq)
+  {
+    case 150:
+      filter = filter_150hz;
+      break;
+    case 50:
+      filter = filter_50hz;
+      break;
+    case 15:
+      filter = filter_15hz;
+      break;
+    case 0:
+      filter = no_filter;
+      break;
+    default:
+      std::cout << "[OptoforceAcquisition::setSensorSpeed] Not valid filter " << filter << std::endl;
+      return false;
+  }
+  bool state = true;
+  for (size_t i = 0; i < devices_recorded_.size(); ++i)
+  {
+    state  = state & devices_recorded_[i]->setFiltering((sensor_filter)filter);
+  }
+
+  return state;
+}
 
 void OptoforceAcquisition::setAcquisitionFrequency(int freq)
 {
   acquisition_freq_ = freq;
+}
+
+bool OptoforceAcquisition::setZero(int number)
+{
+  return false;
+}
+
+bool OptoforceAcquisition::setZeroAll()
+{
+  for (size_t i = 0; i < devices_recorded_.size(); ++i)
+  {
+    devices_recorded_[i]->setZeroAll();
+  }
+  return true;
 }

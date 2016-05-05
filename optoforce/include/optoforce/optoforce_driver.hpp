@@ -99,6 +99,18 @@ public:
   */
   bool setFrequency(const sensor_speed freq);
 
+  /*!
+    \brief to set Zero of the optoforce device
+    \param
+   */
+  bool setZero(int number);
+
+  /*!
+    \brief to set Zero All optoforce devices
+    \param
+   */
+  bool setZeroAll();
+
 protected:
   //! daq of the device considered.
   OptoDAQ * daq_;
