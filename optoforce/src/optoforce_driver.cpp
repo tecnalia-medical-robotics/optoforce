@@ -249,6 +249,7 @@ bool OptoForceDriver::setCalibration(const std::vector<float> & factor)
   for (size_t i = 0; i < factor.size(); ++i)
   {
     factor_[i] = 1.0 / factor[i];
+    //std::cout << "factor: " << factor_[i] << std::endl;
   }
   return true;
 }
