@@ -1,0 +1,24 @@
+<package>
+  <name>omd</name>
+  <version>1.0.0</version>
+  <description>
+    OptoForce proprietary driver
+  </description>
+  <maintainer email="asier.fernandez@tecnalia.com">Asier Fernandez</maintainer>
+  <license>TODO</license>
+
+  <!--<buildtool_depend>cmake</buildtool_depend>-->
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_modules</build_depend>
+
+
+<!--  
+  <run_depend>catkin</run_depend>
+  <run_depend>pkg-config</run_depend>
+-->
+<!--
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+-->
+</package>

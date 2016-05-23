@@ -37,6 +37,10 @@ add_library(optoforce STATIC ${SOURCES})
 
 include_directories(${omd_INCLUDE_DIRS})
 
+# Compatiblity with ROS
+#message("Looking Compatibility with ROS ${optoforce_SOURCE_DIR}/include")
+catkin_package(INCLUDE_DIRS include)
+
 target_link_libraries(optoforce ${omd_LIBRARIES})
 
 #adding the examples executables. todo: make this compilation optional
@@ -69,8 +73,6 @@ install(DIRECTORY include/ DESTINATION include)
 
 # This makes the project importable from the build directory
 export(TARGETS optoforce FILE optoforceConfig.cmake)
-
-
 
 
 
