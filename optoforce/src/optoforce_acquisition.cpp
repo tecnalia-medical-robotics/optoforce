@@ -17,7 +17,7 @@
 // the maximum number of samples is hardcoded to 5min supposing a 1Khz sensor acq
 OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
-                                               is_stop_request_(false),              
+                                               is_stop_request_(false),
                                                max_num_samples_ (5 * 60 * 1000),
                                                acquisition_freq_(1000)
 {
@@ -462,7 +462,7 @@ bool OptoforceAcquisition::storeData()
     // todo check if the file opening worked
     file_handler.open (name_file);
 
-    // prepare the csv format, accroding to the sensor connected
+    // prepare the csv format, according to the sensor connected
     std::stringstream oss;
 
     // '#' is for Gnuplot
@@ -474,7 +474,7 @@ bool OptoforceAcquisition::storeData()
     file_handler << oss.str() << std::endl;
 
     // Storing the data
-    // todo decide what to do on the record time... 
+    // todo decide what to do on the record time...
     // we assume the first one is the first first one
     // an we take it as reference
     boost::chrono::high_resolution_clock::time_point time_zero;
