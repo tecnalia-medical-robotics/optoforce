@@ -189,6 +189,24 @@ bool OptoforceAcquisition::startRecording(const int num_samples)
   return true;
 }
 
+// return latest data
+void OptoforceAcquisition::getData(std::vector< std::vector<float> > &latest_samples)
+{
+  mutex_sample_.lock();
+  latest_samples = latest_samples_;
+  mutex_sample_.unlock();
+}
+
+void OptoforceAcquisition::getSerialNumbers(std::vector<std::string> &serial_numbers)
+{
+  serial_numbers.clear();
+  for (size_t i = 0; i < devices_recorded_.size(); ++i)
+  {
+    serial_numbers.push_back(devices_recorded_[i]->getSerialNumber());
+
+  }
+}
+
 //todo store the gloabl start time, and then delay all data wrt to this time?
 void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_debug)
 {
@@ -204,9 +222,13 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
   // to store the last values provided by the device
   std::vector< std::vector<float> > buffered_values;
 
+  latest_samples_.clear();
+  std::vector<float> vec;
+  vec.clear();
   for (size_t i = 0; i < devices_recorded_.size(); ++i)
   {
     data_acq.push_back(buffered_values);
+    latest_samples_.push_back(vec);
   }
 
   bool is_stop_request = false;
@@ -234,6 +256,9 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
 
     if (is_debug)
       std::cout << "[" << num_samples_ << "] " ;
+
+    mutex_sample_.lock();
+
     for (size_t i = 0; i < devices_recorded_.size(); ++i)
     {
       //values.clear();
@@ -264,6 +289,14 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
         }
         else
         {
+          int idx_last = buffered_values.size()- 1;
+
+          // Fill latest data within this variable
+          // This variable is used to return latest value within getData method
+          latest_samples_[i] = buffered_values[idx_last];
+
+          //data_acq[i].push_back(buffered_values[idx_last]);
+
           // see (DATA_STRUCT) comment
           //sensor_read.first  = boost::chrono::high_resolution_clock::now();
           //sensor_read.second = buffered_values;
@@ -292,6 +325,8 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
 
       num_samples_ = std::max(num_samples_,  data_acq[i].size());
     }
+
+    mutex_sample_.unlock();
 
     if (is_debug)
       std::cout << std::endl;

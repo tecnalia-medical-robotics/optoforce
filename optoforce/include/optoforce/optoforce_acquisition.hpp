@@ -64,6 +64,12 @@ public:
     \param is_debug whether extra information is displayed during acquisition
    */
   void acquireThread(const int desired_num_samples, bool is_debug = false);
+
+  void getData(std::vector< std::vector<float> > &latest_samples);
+
+  //! Get Serial numbers of connected deviced
+  void getSerialNumbers(std::vector<std::string> &serial_numbers);
+
   //! check whether a data acquisition is active
   bool isRecording();
   /*!
@@ -142,6 +148,10 @@ private:
   bool is_stop_request_;
   //! to access to critical data shared in multi-threads
   boost::mutex mutex_;
+
+  //! to access to critical data shared in multi-threads
+  boost::mutex mutex_sample_;
+
   //! acquisition thread;
   boost::thread* thread_acq_;
   //! current sample number
@@ -152,6 +162,10 @@ private:
   int acquisition_freq_;
   //! filename of the stored data
   std::string filename_;
+
+  //! last sensor data
+  std::vector< std::vector<float> > latest_samples_;
+
 };
 
 #endif // OPTOFORCE_ACQUISITION_HPP
