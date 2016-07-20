@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
-
 project(optoforce)
+
+message ("********************************************")
+message ("starting cmake management of ${PROJECT_NAME}")
 
 #todo check if this is the good place for this
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
@@ -38,8 +40,12 @@ add_library(optoforce STATIC ${SOURCES})
 include_directories(${omd_INCLUDE_DIRS})
 
 # Compatiblity with ROS
-#message("Looking Compatibility with ROS ${optoforce_SOURCE_DIR}/include")
-catkin_package(INCLUDE_DIRS include)
+if(DEFINED ENV{ROS_ROOT})
+  message ("ROS defined -- using catkin ")
+  catkin_package(INCLUDE_DIRS include)
+else()
+  message ("ROS not defined -- not using catkin ")
+endif()
 
 target_link_libraries(optoforce ${omd_LIBRARIES})
 
@@ -96,3 +102,9 @@ export(TARGETS optoforce FILE optoforceConfig.cmake)
 #file(COPY ${omd_SOURCE_DIR}/lib/linux/libOMD.so.1.5 DESTINATION ${CMAKE_BINARY_DIR}/bin/Debug )
 #file(COPY ${omd_SOURCE_DIR}/lib/linux/libOMD.so.1 DESTINATION ${CMAKE_BINARY_DIR}/bin/Debug )
 #file(COPY ${omd_SOURCE_DIR}/lib/linux/libOMD.so DESTINATION ${CMAKE_BINARY_DIR}/bin/Debug )
+
+
+message ("********************************************")
+message ("Test: ${optoforce_DIR}")
+message ("********************************************")
+message ("cmake management of ${PROJECT_NAME} done")
