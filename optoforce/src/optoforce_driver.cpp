@@ -226,6 +226,7 @@ std::string OptoForceDriver::getDeviceName() const
   return std::string(port_.deviceName);
 }
 
+
 bool OptoForceDriver::setCalibration(const std::vector<float> & factor)
 {
   if (!isOpen())

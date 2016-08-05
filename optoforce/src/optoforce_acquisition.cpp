@@ -111,7 +111,7 @@ bool OptoforceAcquisition::reorderDevices(const std::vector<std::string> &lseria
   {
     if (!isDeviceConnected(lserial_number[i]))
     {
-      std::cerr << "Could not find device " << lserial_number[i] << std::endl;
+      std::cerr << "Could not find device***" << lserial_number[i] << std::endl;
       std::cerr << "stopping the reordering" << std::endl;
       is_ok = false;
     }
@@ -121,7 +121,8 @@ bool OptoforceAcquisition::reorderDevices(const std::vector<std::string> &lseria
       int j = 0;
       while (!found)
       {
-        found = !(lserial_number[i].compare(devices_[j]->getDeviceName()));
+        //found = !(lserial_number[i].compare(devices_[j]->getDeviceName()));
+        found = !(lserial_number[i].compare(devices_[j]->getSerialNumber()));
         if (!found)
           ++j;
       }
@@ -145,7 +146,8 @@ bool OptoforceAcquisition::setDeviceCalibration(const std::string & serial_numbe
   int j = 0;
   while (!found)
   {
-    found = !(serial_number.compare(devices_[j]->getDeviceName()));
+    //found = !(serial_number.compare(devices_[j]->getDeviceName()));
+    found = !(serial_number.compare(devices_[j]->getSerialNumber()));
     if (!found)
       ++j;
   }
@@ -393,7 +395,8 @@ bool OptoforceAcquisition::isDeviceConnected(const std::string serial_number)
        (!is_device_found) && (it_device != devices_.end());
        ++it_device)
   {
-    is_device_found = !(serial_number.compare((*it_device)->getDeviceName()));
+    //is_device_found = !(serial_number.compare((*it_device)->getDeviceName()));
+      is_device_found = !(serial_number.compare((*it_device)->getSerialNumber()));
   }
   return is_device_found;
 }
