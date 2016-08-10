@@ -22,6 +22,7 @@ OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                acquisition_freq_(1000)
 {
   filename_ = "";
+  desired_num_samples_ = max_num_samples_;
 }
 
 OptoforceAcquisition::~OptoforceAcquisition()
@@ -171,22 +172,40 @@ void OptoforceAcquisition::closeDevices()
 }
 
 // todo can we use the value of thread_acq_ to know whether it is active or not?
+bool OptoforceAcquisition::startRecording()
+{
+  startRecording(desired_num_samples_);
+}
+
+// todo can we use the value of thread_acq_ to know whether it is active or not?
 bool OptoforceAcquisition::startRecording(const int num_samples)
 {
+  std::cout << "startRecording" << std::endl;
+  std::cout << "is recording: " << is_recording_ << std::endl;
   bool is_recording;
   mutex_.lock();
   is_recording = is_recording_;
   mutex_.unlock();
 
+  // If a recording is running, start new recording
   if (is_recording)
-    return false;
+  {
+    stopRecording();
+    storeData();
+  }
+    //return false;
 
   // not recording, launch it!
   mutex_.lock();
   is_recording_ = true;
   mutex_.unlock();
 
-  boost::thread t(&OptoforceAcquisition::acquireThread, this, num_samples, false);
+  std::cout << "launching thread" << std::endl;
+  //boost::thread t(&OptoforceAcquisition::acquireThread, this, num_samples, false);
+  if (thread_acq_ != NULL)
+    thread_acq_.reset();
+
+    thread_acq_ = boost::shared_ptr< boost::thread >(new boost::thread(boost::bind(&OptoforceAcquisition::acquireThread, this,num_samples,false)));
 
   return true;
 }
@@ -212,6 +231,8 @@ void OptoforceAcquisition::getSerialNumbers(std::vector<std::string> &serial_num
 //todo store the gloabl start time, and then delay all data wrt to this time?
 void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_debug)
 {
+  std::cout << "acquireThread" << std::endl;
+
   // double check if the data_acquired variable is empty. If not force it
   if (!data_acquired_.empty())
   {
@@ -251,7 +272,10 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
   // record the last recoding of each devic
   std::vector< boost::chrono::high_resolution_clock::time_point> l_time_last;
 
-
+  std::cout << "is_stop_request: " << is_stop_request << std::endl;
+  std::cout << "is_stop_request_: " << is_stop_request_ << std::endl;
+  std::cout << "num_samples_: " << num_samples_ << std::endl;
+  std::cout << "max_samples: " << max_samples << std::endl;
   while ((num_samples_ < max_samples) && !is_stop_request)
   {
     l_time_last.clear();
@@ -342,6 +366,8 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
     mutex_.lock();
     is_stop_request = is_stop_request_;
     mutex_.unlock();
+    //std::cout << "while is_stop_request: " << is_stop_request << std::endl;
+
   }
   std::cout << "Recorded " << num_samples_ << " data" << std::endl;
 
@@ -367,11 +393,13 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
     data_acquired_.push_back(l_data_stamped);
   }
 
-  std::cout << "acquireThread end" << std::endl;
-
   mutex_.lock();
   is_recording_ = false;
+  is_stop_request_ = false;
   mutex_.unlock();
+
+  std::cout << "[acquireThread] end" << std::endl;
+
 }
 
 
@@ -403,6 +431,8 @@ bool OptoforceAcquisition::isDeviceConnected(const std::string serial_number)
 
 bool OptoforceAcquisition::stopRecording()
 {
+  std::cout << "stopRecording" << std::endl;
+
   mutex_.lock();
   is_stop_request_ = true;
   mutex_.unlock();
@@ -456,7 +486,9 @@ bool OptoforceAcquisition::storeData()
     // We only take part of the posix time
     //std::string name_file = boost::posix_time::to_iso_string(posix_time) + "_"
       std::string name_file = filename_ + "_"
-      + devices_recorded_[i]->getSerialNumber() + "_forces.csv";
+                                + devices_recorded_[i]->getSerialNumber() + "_"
+                                + boost::posix_time::to_iso_string(posix_time)
+                                + "_forces.csv";
 
     std::cout << "Storing filename: " << name_file << std::endl;
     std::cout << "Storing " <<  data_acquired_[i].size() << " samples" << std::endl;
@@ -472,7 +504,7 @@ bool OptoforceAcquisition::storeData()
     if (devices_recorded_[i]->is3DSensor())
       oss << "#t_ms;f_x;f_y;f_z;";
     else
-      oss << "#t_ms;f_x;f_y;f_z;t_x,t_y;t_z;";
+      oss << "#t_ms;f_x;f_y;f_z;t_x;t_y;t_z;";
 
     file_handler << oss.str() << std::endl;
 
@@ -517,6 +549,12 @@ bool OptoforceAcquisition::storeData()
     file_handler.close();
   }
   return true;
+}
+void OptoforceAcquisition::setDesiredNumberSamples(int desired_num_samples)
+{
+  std::cout << "***" << std::endl;
+  desired_num_samples_ = desired_num_samples;
+  std::cout << "***" << std::endl;
 }
 
 // TODO set frequcny to all devices?

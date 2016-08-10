@@ -59,6 +59,11 @@ public:
   */
   bool startRecording(const int num_samples);
   /*!
+    \brief launch th recording of data
+    \param num_samples number of reading requested (-1 is unlimited)
+  */
+  bool startRecording();
+  /*!
     \brief acquisition thread
     \param desired_num_samples number of reading requested (-1 is unlimited)
     \param is_debug whether extra information is displayed during acquisition
@@ -133,6 +138,11 @@ public:
    */
   void setAcquisitionFrequency(int freq);
 
+  /*!
+    \brief Set Desired Number Samples
+  */
+  void setDesiredNumberSamples(int desired_num_samples);
+
 private:
   //! enumerator of available devices
   OptoForceArrayDriver * device_enumerator_;
@@ -153,7 +163,11 @@ private:
   boost::mutex mutex_sample_;
 
   //! acquisition thread;
-  boost::thread* thread_acq_;
+  //boost::thread* thread_acq_;
+  boost::shared_ptr<boost::thread> thread_acq_;
+
+  //! desired number of samples to be read from sensor
+  int desired_num_samples_;
   //! current sample number
   size_t num_samples_;
   //! maximum number of samples
