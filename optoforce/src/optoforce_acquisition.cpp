@@ -18,6 +18,7 @@
 OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
                                                is_stop_request_(false),
+                                               auto_store_(false),
                                                max_num_samples_ (5 * 60 * 1000),
                                                acquisition_freq_(1000)
 {
@@ -178,6 +179,12 @@ bool OptoforceAcquisition::startRecording()
 }
 
 // todo can we use the value of thread_acq_ to know whether it is active or not?
+void OptoforceAcquisition::setAutoStore(bool auto_store)
+{
+  auto_store_ = auto_store;
+}
+
+// todo can we use the value of thread_acq_ to know whether it is active or not?
 bool OptoforceAcquisition::startRecording(const int num_samples)
 {
   std::cout << "startRecording" << std::endl;
@@ -188,10 +195,10 @@ bool OptoforceAcquisition::startRecording(const int num_samples)
   mutex_.unlock();
 
   // If a recording is running, start new recording
+  // stopRecording function will set the flag to break acquireThread while loop
   if (is_recording)
   {
     stopRecording();
-    storeData();
   }
     //return false;
 
@@ -202,8 +209,9 @@ bool OptoforceAcquisition::startRecording(const int num_samples)
 
   std::cout << "launching thread" << std::endl;
   //boost::thread t(&OptoforceAcquisition::acquireThread, this, num_samples, false);
-  if (thread_acq_ != NULL)
-    thread_acq_.reset();
+  //if (thread_acq_ != NULL)
+    //thread_acq_.reset();
+
 
     thread_acq_ = boost::shared_ptr< boost::thread >(new boost::thread(boost::bind(&OptoforceAcquisition::acquireThread, this,num_samples,false)));
 
@@ -398,6 +406,9 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
   is_stop_request_ = false;
   mutex_.unlock();
 
+  if (auto_store_)
+    storeData();
+
   std::cout << "[acquireThread] end" << std::endl;
 
 }
@@ -548,6 +559,17 @@ bool OptoforceAcquisition::storeData()
     }
     file_handler.close();
   }
+
+  std::cout << "[storeData] Clear Variables to free memory" << std::endl;
+
+  //std::vector<std::vector<SampleStamped> >().swap(data_acquired_);
+  //std::vector< std::vector<float> >().swap(latest_samples_);
+  data_acquired_.shrink_to_fit();
+  latest_samples_.shrink_to_fit();
+  //data_acquired_.clear();
+  //latest_samples_.clear();
+
+
   return true;
 }
 void OptoforceAcquisition::setDesiredNumberSamples(int desired_num_samples)

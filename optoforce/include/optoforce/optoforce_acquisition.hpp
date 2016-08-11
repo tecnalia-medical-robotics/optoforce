@@ -54,6 +54,12 @@ public:
   */
   void closeDevices();
   /*!
+    \brief Auto store data after acquisition
+    \param
+  */
+  void setAutoStore(bool auto_store);
+
+  /*!
     \brief launch th recording of data
     \param num_samples number of reading requested (-1 is unlimited)
   */
@@ -176,6 +182,8 @@ private:
   int acquisition_freq_;
   //! filename of the stored data
   std::string filename_;
+  //! Flag to indicate auto store data in a file after theacquisition finishes
+  bool auto_store_;
 
   //! last sensor data
   std::vector< std::vector<float> > latest_samples_;
