@@ -141,6 +141,8 @@ bool OptoForceDriver::getData(std::vector< std::vector<float> > & val, int p_iSe
       val.push_back(data);
     }
   }
+  if (package6d != NULL)
+    delete[] package6d;
   return true;
 }
 
