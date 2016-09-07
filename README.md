@@ -60,6 +60,15 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 
     plot 'filename.csv' using 1:2 with lines title "Fx", 'filename.csv' using 1:3 with lines title "Fz", 'filename.csv' using 1:4 with lines title "Fz" 
 
+# Interesting links
+
+OptoForce: [EtherDAQ ROS driver](https://github.com/OptoForce/etherdaq_ros)
+
+Shadow Robot: [ROS-Serial driver](https://github.com/shadow-robot/optoforce/blob/indigo-devel/optoforce/src/optoforce/optoforce.py)
+
+LARICS-Lab: [OMD based ROS driver](https://github.com/larics/optoforce-ros-pusblisher)
+
+
 # To do
 Most of the aspects to improve are defined in the code using the flag todo.
 Othe relevant aspect to consider:
