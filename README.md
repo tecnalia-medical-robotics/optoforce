@@ -1,5 +1,8 @@
-# Optoforce Driver
+## Optoforce Driver Description
+
 The current version of the library is built on the top of the official library of the manufacturer (see [here](http://optoforce.com/support/))
+
+This version of the driver allows to manage more than one OptoForce device together.
 
 The access to the devices is done in 2 steps:
 
@@ -13,12 +16,11 @@ Examples of uses can be found in the directory [examples](examples).
 Main developers so far: Asier Fernandez, Anthony Remazeilles
 
 
-# Installation Instructions
+## Devices configuration in Linux
 
-## 1. Linux
 - Add privileges for the user to "dialout" group
 ```bash
-$ sudo usermod -a -G group_name user_name
+$ sudo usermod -a -G dialout user_name
 ```
 - Change permission to usb port.
   * Create next file
@@ -30,7 +32,7 @@ $ sudo gedit /etc/udev/rules.d/72-OptoForce.rules
 ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 ```
 
-# Gnuplot Manual
+## Gnuplot
 
 - Set column separator
 
@@ -60,7 +62,7 @@ ATTR{idVendor}=="04d8", ATTR{idProduct}=="000a", MODE="0666", GROUP="dialout"
 
     plot 'filename.csv' using 1:2 with lines title "Fx", 'filename.csv' using 1:3 with lines title "Fz", 'filename.csv' using 1:4 with lines title "Fz" 
 
-# Interesting links
+## Related Projetcs
 
 OptoForce: [EtherDAQ ROS driver](https://github.com/OptoForce/etherdaq_ros)
 
@@ -68,11 +70,4 @@ Shadow Robot: [ROS-Serial driver](https://github.com/shadow-robot/optoforce/blob
 
 LARICS-Lab: [OMD based ROS driver](https://github.com/larics/optoforce-ros-pusblisher)
 
-
-# To do
-Most of the aspects to improve are defined in the code using the flag todo.
-Othe relevant aspect to consider:
-
-* Miguel started a driver in which a dirct access to the devices was done through boost (ie without the optofrce driver)
-* An optoforce library has been developed [there](https://github.com/ethz-asl/liboptoforce)
-* Optoforce developed a ROS node that should be tested as well (see [here](http://optoforce.com/support/)).
+ETH Zurich ASL: [OptoForce driver](https://github.com/ethz-asl/liboptoforce)
