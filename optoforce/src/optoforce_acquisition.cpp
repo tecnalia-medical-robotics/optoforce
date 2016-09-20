@@ -18,7 +18,7 @@
 OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
                                                is_stop_request_(false),
-                                               auto_store_(false),
+                                               auto_store_(true),
                                                max_num_samples_ (5 * 60 * 1000),
                                                acquisition_freq_(1000)
 {
