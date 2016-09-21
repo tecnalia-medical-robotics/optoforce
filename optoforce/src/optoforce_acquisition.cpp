@@ -17,7 +17,10 @@
 // the maximum number of samples is hardcoded to 5min supposing a 1Khz sensor acq
 OptoforceAcquisition::OptoforceAcquisition() : device_enumerator_(NULL),
                                                is_recording_(false),
-                                               is_stop_request_(false),
+                                               is_reading_(false),
+                                               is_stop_recording_request_(false),
+                                               is_stop_reading_request_(false),
+                                               is_start_recording_request_(false),
                                                auto_store_(true),
                                                max_num_samples_ (5 * 60 * 1000),
                                                acquisition_freq_(1000)
@@ -172,12 +175,29 @@ void OptoforceAcquisition::closeDevices()
   device_enumerator_ = NULL;
 }
 
-// todo can we use the value of thread_acq_ to know whether it is active or not?
 bool OptoforceAcquisition::startRecording()
 {
-  startRecording(desired_num_samples_);
-}
+  mutex_.lock();
+  is_start_recording_request_ = true;
+  is_stop_recording_request_ = false;
+  mutex_.unlock();
 
+  std::cout << "[ OptoforceAcquisition::startRecording] is_start_recording_request: " << is_start_recording_request_ << std::endl;
+  std::cout << "[ OptoforceAcquisition::startRecording] is_stop_recording_request: " << is_stop_recording_request_ << std::endl;
+
+  mutex_.lock();
+  is_recording_ = true;
+  mutex_.unlock();
+
+  if (!isReading())
+    startReading();
+}
+// todo can we use the value of thread_acq_ to know whether it is active or not?
+bool OptoforceAcquisition::startRecording(int num_samples)
+{
+
+
+}
 // todo can we use the value of thread_acq_ to know whether it is active or not?
 void OptoforceAcquisition::setAutoStore(bool auto_store)
 {
@@ -185,26 +205,26 @@ void OptoforceAcquisition::setAutoStore(bool auto_store)
 }
 
 // todo can we use the value of thread_acq_ to know whether it is active or not?
-bool OptoforceAcquisition::startRecording(const int num_samples)
+bool OptoforceAcquisition::startReading()
 {
-  std::cout << "startRecording" << std::endl;
-  std::cout << "is recording: " << is_recording_ << std::endl;
-  bool is_recording;
+  std::cout << "startReading" << std::endl;
+  std::cout << "is reading: " << is_reading_ << std::endl;
+  bool is_reading;
   mutex_.lock();
-  is_recording = is_recording_;
+  is_reading = is_reading_;
   mutex_.unlock();
 
   // If a recording is running, start new recording
   // stopRecording function will set the flag to break acquireThread while loop
-  if (is_recording)
+  if (is_reading)
   {
-    stopRecording();
+    stopReading();
   }
     //return false;
 
   // not recording, launch it!
   mutex_.lock();
-  is_recording_ = true;
+  is_reading_ = true;
   mutex_.unlock();
 
   std::cout << "launching thread" << std::endl;
@@ -213,7 +233,7 @@ bool OptoforceAcquisition::startRecording(const int num_samples)
     //thread_acq_.reset();
 
 
-    thread_acq_ = boost::shared_ptr< boost::thread >(new boost::thread(boost::bind(&OptoforceAcquisition::acquireThread, this,num_samples,false)));
+    thread_acq_ = boost::shared_ptr< boost::thread >(new boost::thread(boost::bind(&OptoforceAcquisition::acquireThread, this, false)));
 
   return true;
 }
@@ -237,7 +257,7 @@ void OptoforceAcquisition::getSerialNumbers(std::vector<std::string> &serial_num
 }
 
 //todo store the gloabl start time, and then delay all data wrt to this time?
-void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_debug)
+void OptoforceAcquisition::acquireThread(bool is_debug)
 {
   std::cout << "acquireThread" << std::endl;
 
@@ -262,13 +282,8 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
     latest_samples_.push_back(vec);
   }
 
-  bool is_stop_request = false;
+  bool is_stop_reading_request = false;
 
-  int max_samples = max_num_samples_;
-  if (desired_num_samples != -1)
-    max_samples = desired_num_samples;
-
-  std::cout << "samples to read: " << max_samples << std::endl;
   num_samples_ = 0;
 
   // for the first one, we just read the last value
@@ -280,18 +295,23 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
   // record the last recoding of each devic
   std::vector< boost::chrono::high_resolution_clock::time_point> l_time_last;
 
-  std::cout << "is_stop_request: " << is_stop_request << std::endl;
-  std::cout << "is_stop_request_: " << is_stop_request_ << std::endl;
-  std::cout << "num_samples_: " << num_samples_ << std::endl;
-  std::cout << "max_samples: " << max_samples << std::endl;
-  while ((num_samples_ < max_samples) && !is_stop_request)
+  std::cout << "is_stop_request: " << is_stop_reading_request << std::endl;
+  std::cout << "is_stop_recording_request_: " << is_stop_reading_request_ << std::endl;
+
+  bool is_start_recording_request = false;
+  bool is_stop_recording_request = false;
+
+  while (!is_stop_reading_request)
   {
     l_time_last.clear();
 
     if (is_debug)
       std::cout << "[" << num_samples_ << "] " ;
 
-    mutex_sample_.lock();
+    mutex_.lock();
+    is_start_recording_request = is_start_recording_request_;
+    is_stop_recording_request = is_stop_recording_request_;
+    mutex_.unlock();
 
     for (size_t i = 0; i < devices_recorded_.size(); ++i)
     {
@@ -301,53 +321,57 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
       bool is_data_available = true;
 
       is_data_available  = devices_recorded_[i]->getData(buffered_values);
-      l_time_last.push_back(boost::chrono::high_resolution_clock::now());
+      //l_time_last.push_back(boost::chrono::high_resolution_clock::now());
 
       if (is_data_available)
       {
-        // todo: make sure is_data_available is true, and some data is available
-        if (is_first)
-        {
-          //todo make sure the lat value is indeed the good one to use.
-          // read the last value of each device, so that we fluch the internal buffer
-
-          int idx_last = buffered_values.size()- 1;
-          data_acq[i].push_back(buffered_values[idx_last]);
-
-          if (is_debug)
-          {
-            for (unsigned int k = 0; k < buffered_values[idx_last].size(); ++k)
-              std::cout << buffered_values[idx_last][k] << " ";
-            std::cout << " + ";
-          }
-        }
-        else
-        {
           int idx_last = buffered_values.size()- 1;
 
           // Fill latest data within this variable
           // This variable is used to return latest value within getData method
+          mutex_sample_.lock();
           latest_samples_[i] = buffered_values[idx_last];
+          mutex_sample_.unlock();
 
-          //data_acq[i].push_back(buffered_values[idx_last]);
+        if (is_start_recording_request)
+        {
+          l_time_last.push_back(boost::chrono::high_resolution_clock::now());
 
-          // see (DATA_STRUCT) comment
-          //sensor_read.first  = boost::chrono::high_resolution_clock::now();
-          //sensor_read.second = buffered_values;
-          //lvalues[i].push_back(sensor_read);
-
-          for (unsigned int j = 0; j < buffered_values.size(); ++j)
+          // todo: make sure is_data_available is true, and some data is available
+          if (is_first)
           {
-            data_acq[i].push_back(buffered_values[j]);
+            //todo make sure the lat value is indeed the good one to use.
+            // read the last value of each device, so that we fluch the internal buffer
+
+            int idx_last = buffered_values.size()- 1;
+            data_acq[i].push_back(buffered_values[idx_last]);
 
             if (is_debug)
             {
-              // displaying the values read.
-              for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
-                std::cout << buffered_values[j][k] << " ";
+              for (unsigned int k = 0; k < buffered_values[idx_last].size(); ++k)
+                std::cout << buffered_values[idx_last][k] << " ";
               std::cout << " + ";
             }
           }
+
+          else
+          {
+            for (unsigned int j = 0; j < buffered_values.size(); ++j)
+            {
+              data_acq[i].push_back(buffered_values[j]);
+
+              if (is_debug)
+              {
+                // displaying the values read.
+                for (unsigned int k = 0; k < buffered_values[j].size(); ++k)
+                  std::cout << buffered_values[j][k] << " ";
+                std::cout << " + ";
+              }
+            }
+          }
+          if (is_first)
+            l_time_start = l_time_last;
+          is_first = false;
         }
       }
       else
@@ -357,64 +381,75 @@ void OptoforceAcquisition::acquireThread(const int desired_num_samples, bool is_
       if (is_debug)
         std::cout << " || ";
 
-      num_samples_ = std::max(num_samples_,  data_acq[i].size());
+      num_samples_ = data_acq[i].size();
     }
-
-    mutex_sample_.unlock();
 
     if (is_debug)
       std::cout << std::endl;
 
-    if (is_first)
-      l_time_start = l_time_last;
-    is_first = false;
+    //if (is_first)
+    //  l_time_start = l_time_last;
+    //is_first = false;
+
+    if (is_stop_recording_request)
+    {
+      std::cout << "Recorded " << num_samples_ << " data" << std::endl;
+
+      for (size_t i = 0; i < devices_recorded_.size(); ++i)
+      {
+        boost::chrono::nanoseconds acq_all_sample_ns = l_time_last[i] - l_time_start[i];
+        boost::chrono::nanoseconds acq_one_sample_ns = boost::chrono::nanoseconds(acq_all_sample_ns.count() / (data_acq[i].size() -1));
+
+        std::cout << "Device["<< i << "]-->"<< data_acq[i].size() << " samples" << std::endl;
+        std::cout << " Acquisition time : " << acq_all_sample_ns.count() * 1e-6 << std::endl;
+        std::cout << " num data acquired: "  << std::endl;
+        std::cout << " time per acq: " << acq_one_sample_ns.count() * 1e-6 << std::endl;
+
+        std::vector<SampleStamped> l_data_stamped;
+        SampleStamped data_stamped;
+        for (unsigned int j = 0; j < data_acq[i].size(); ++j)
+        {
+          data_stamped.sample = data_acq[i][j];
+          data_stamped.acq_time = l_time_start[i] + boost::chrono::nanoseconds(j * acq_one_sample_ns.count() );
+
+          l_data_stamped.push_back(data_stamped);
+        }
+
+        data_acquired_.push_back(l_data_stamped);
+        //std::cout << "Storing " <<  data_acquired_[i].size() << " samples" << std::endl;
+
+      }
+
+      mutex_.lock();
+      is_recording_ = false;
+      mutex_.unlock();
+
+      storeData();
+
+      for (size_t i = 0; i < devices_recorded_.size(); ++i)
+      {
+        data_acq[i].clear();
+        data_acquired_.clear();
+      }
+      // clear variables
+      //latest_samples_.clear();
+      //vec.clear();
+      //data_acq.clear();
+      mutex_.lock();
+      is_stop_recording_request_ = false;
+      mutex_.unlock();
+
+      is_first = true;
+    }
 
     boost::this_thread::sleep_for(boost::chrono::milliseconds(1000/acquisition_freq_));
-    //boost::this_thread::sleep_for(boost::chrono::nanoseconds(500000000/acquisition_freq_));
-    mutex_.lock();
-    is_stop_request = is_stop_request_;
-    mutex_.unlock();
-    //std::cout << "while is_stop_request: " << is_stop_request << std::endl;
-
   }
-  std::cout << "Recorded " << num_samples_ << " data" << std::endl;
-
-  for (size_t i = 0; i < devices_recorded_.size(); ++i)
-  {
-    boost::chrono::nanoseconds acq_all_sample_ns = l_time_last[i] - l_time_start[i];
-    boost::chrono::nanoseconds acq_one_sample_ns = boost::chrono::nanoseconds(acq_all_sample_ns.count() / (data_acq[i].size() -1));
-
-    std::cout << "Device["<< i << "]-->"<< data_acq[i].size() << " samples" << std::endl;
-    std::cout << " Acquisition time : " << acq_all_sample_ns.count() * 1e-6 << std::endl;
-    std::cout << " num data acquired: "  << std::endl;
-    std::cout << " time per acq: " << acq_one_sample_ns.count() * 1e-6 << std::endl;
-
-    std::vector<SampleStamped> l_data_stamped;
-    SampleStamped data_stamped;
-    for (unsigned int j = 0; j < data_acq[i].size(); ++j)
-    {
-      data_stamped.sample = data_acq[i][j];
-      data_stamped.acq_time = l_time_start[i] + boost::chrono::nanoseconds(j * acq_one_sample_ns.count() );
-
-      l_data_stamped.push_back(data_stamped);
-    }
-    data_acquired_.push_back(l_data_stamped);
-  }
-
-  mutex_.lock();
-  is_recording_ = false;
-  is_stop_request_ = false;
-  mutex_.unlock();
-
-  if (auto_store_)
-    storeData();
 
   std::cout << "[acquireThread] end" << std::endl;
 
 }
 
 
-// todo can we use the value of thread_acq_ to know whether it is active or not?
 bool OptoforceAcquisition::isRecording()
 {
   bool is_recording;
@@ -422,6 +457,15 @@ bool OptoforceAcquisition::isRecording()
   is_recording = is_recording_;
   mutex_.unlock();
   return is_recording;
+}
+
+bool OptoforceAcquisition::isReading()
+{
+  bool is_reading;
+  mutex_.lock();
+  is_reading = is_reading_;
+  mutex_.unlock();
+  return is_reading;
 }
 
 bool OptoforceAcquisition::isDeviceConnected(const std::string serial_number)
@@ -440,19 +484,41 @@ bool OptoforceAcquisition::isDeviceConnected(const std::string serial_number)
   return is_device_found;
 }
 
-bool OptoforceAcquisition::stopRecording()
+bool OptoforceAcquisition::stopReading()
 {
-  std::cout << "stopRecording" << std::endl;
+  std::cout << "stopReading start" << std::endl;
 
   mutex_.lock();
-  is_stop_request_ = true;
+  is_stop_reading_request_ = true;
   mutex_.unlock();
 
-  // block until it stops recording
+  std::cout << "[ OptoforceAcquisition::startRecording] is_stop_reading_request_: " << is_stop_reading_request_ << std::endl;
+
+  // block until it stops reading
+  while (isReading())
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
+
+  std::cout << "stopReading end" << std::endl;
+  return true;
+}
+
+bool OptoforceAcquisition::stopRecording()
+{
+  std::cout << "[OptoforceAcquisition::stopRecording] in" << std::endl;
+
+  mutex_.lock();
+  is_stop_recording_request_ = true;
+  is_start_recording_request_ = false;
+  mutex_.unlock();
+
+  std::cout << "[ OptoforceAcquisition::stopRecording] is_start_recording_request: " << is_start_recording_request_ << std::endl;
+  std::cout << "[ OptoforceAcquisition::stopRecording] is_stop_recording_request: " << is_stop_recording_request_ << std::endl;
+
+  // block until it stops reading
   while (isRecording())
     boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
 
-  std::cout << "stopRecording end" << std::endl;
+  std::cout << "[OptoforceAcquisition::stopRecording] out" << std::endl;
   return true;
 }
 

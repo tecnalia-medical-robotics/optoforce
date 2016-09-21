@@ -60,29 +60,41 @@ public:
   void setAutoStore(bool auto_store);
 
   /*!
-    \brief launch th recording of data
+    \brief launch the recording of data
     \param num_samples number of reading requested (-1 is unlimited)
   */
   bool startRecording(const int num_samples);
   /*!
-    \brief launch th recording of data
+    \brief launch the recording of data
     \param num_samples number of reading requested (-1 is unlimited)
   */
   bool startRecording();
+  /*!
+    \brief launch the reading of data
+    \return true if the operation succeeded
+  */
+  bool startReading();
   /*!
     \brief acquisition thread
     \param desired_num_samples number of reading requested (-1 is unlimited)
     \param is_debug whether extra information is displayed during acquisition
    */
-  void acquireThread(const int desired_num_samples, bool is_debug = false);
+  void acquireThread(bool is_debug = false);
 
   void getData(std::vector< std::vector<float> > &latest_samples);
 
   //! Get Serial numbers of connected deviced
   void getSerialNumbers(std::vector<std::string> &serial_numbers);
-
-  //! check whether a data acquisition is active
+  /*!
+    \brief check whether a data storing is active
+    \return true if being recording
+   */
   bool isRecording();
+  /*!
+    \brief check whether a data reading is active
+    \return true if being recording
+   */
+  bool isReading();
   /*!
     \brief check if a given device is effectively seen as connected
     \param serial_number identificator of the device of interest
@@ -94,6 +106,11 @@ public:
     \warning blocking until the acquisition is effectively blocked
   */
   bool stopRecording();
+  /*!
+    \brief request the stop of the reading
+    \return true if the operation succeeded, false otherwise
+  */
+  bool stopReading();
   /*!
     \brief store the data previously recorded
     \return true if the operation succeeded
@@ -160,8 +177,14 @@ private:
   std::vector<std::vector<SampleStamped> > data_acquired_;
   //! whether or not is being recording data
   bool is_recording_;
+  //! whether or not is being reading data
+  bool is_reading_;
   //! whether or not a recording stop is requested
-  bool is_stop_request_;
+  bool is_stop_recording_request_;
+  //! whether or not a reading stop is requested
+  bool is_stop_reading_request_;
+  //! whether or not a recording start is requested
+  bool is_start_recording_request_;
   //! to access to critical data shared in multi-threads
   boost::mutex mutex_;
 
