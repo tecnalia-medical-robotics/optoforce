@@ -6,7 +6,7 @@ devices:
     calibration: [92.6,93.6,20.12,5054.3,5085.4,6912.5]  # IRE005 Calibration from Sensitivity Report
     speed: 1000 # in Hz. Aquisition Frequency of OptoForce Sensor Data
 
-  - name: "IRE004" # Serial Number of the Device. IRE004 Black Box
-    calibration: [97.78,101.72,20.53,5210.6,5267.2,7659.7]  # IRE004 Calibration from Sensitivity Report
-    speed: 1000  # in Hz. Aquisition Frequency of OptoForce Sensor Data
+#  - name: "IRE004" # Serial Number of the Device. IRE004 Black Box
+#    calibration: [97.78,101.72,20.53,5210.6,5267.2,7659.7]  # IRE004 Calibration from Sensitivity Report
+#    speed: 1000  # in Hz. Aquisition Frequency of OptoForce Sensor Data
   
