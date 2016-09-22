@@ -1,0 +1,26 @@
+#find_library(@PROJECT_NAME@_LIBRARY
+#            NAMES @PROJECT_NAME@
+#            #PATHS "${@PROJECT_NAME@_DIR}/../../../@CATKIN_GLOBAL_LIB_DESTINATION@/"
+#            PATHS "${@PROJECT_NAME@_DIR}/../../../../build/@PROJECT_NAME@/"
+#            NO_DEFAULT_PATH)
+
+find_library(@PROJECT_NAME@_LIBRARY
+            NAMES @PROJECT_NAME@
+            #PATHS "${@PROJECT_NAME@_DIR}/../../../@CATKIN_GLOBAL_LIB_DESTINATION@/"
+            PATHS "${@PROJECT_NAME@_DIR}/../../../../build/@PROJECT_NAME@/")
+
+message ("Test here we are")
+message ("Checking for @PROJECT_NAME@ in: ${@PROJECT_NAME@_DIR}/../../../../build/@PROJECT_NAME@/")
+if(@PROJECT_NAME@_LIBRARY)
+  # Multiple CMake projects case (i.e. 'catkin build'):
+  # - The target has already been built when its dependencies require it
+  # - Specify full path to found library
+  message ("catkin build case") 
+  list(APPEND @PROJECT_NAME@_LIBRARIES ${@PROJECT_NAME@_LIBRARY})
+else()
+  # Single CMake project case (i.e. 'catkin_make'):
+  # - The target has not been built when its dependencies require it
+  # - Specify target name only
+  message ("catkin_make case") 
+  list(APPEND @PROJECT_NAME@_LIBRARIES @PROJECT_NAME@)
+endif()

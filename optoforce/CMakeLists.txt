@@ -81,6 +81,28 @@ install(DIRECTORY include/ DESTINATION include)
 # This makes the project importable from the build directory
 export(TARGETS optoforce FILE optoforceConfig.cmake)
 
+# Compatiblity with ROS
+if(DEFINED ENV{ROS_ROOT})
+  #message ("[${PROJECT_NAME}] ROS defined -- using catkin ")
+  find_package(catkin REQUIRED)
+  #message( "[${PROJECT_NAME}] checking in: ${CMAKE_CURRENT_BINARY_DIR}")
+  find_library(LIBOPTOFORCE NAMES "optoforce" PATHS "${CMAKE_CURRENT_BINARY_DIR}")
+  #message ("[${PROJECT_NAME}] Found ${LIBOPTOFORCE}") 
+
+ catkin_package(INCLUDE_DIRS include
+    #LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/libdummy2.a
+    LIBRARIES
+    CFG_EXTRAS my-extras.cmake
+    )
+  set_target_properties(
+    ${PROJECT_NAME} PROPERTIES
+    PREFIX "lib"
+    LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+    )
+  message("[${PROJECT_NAME}] other library site would be:  ${CATKIN_PACKAGE_LIB_DESTINATION}")
+else()
+  message ("[${PROJECT_NAME}] ROS not defined -- not using catkin ")
+endif()
 
 
 # Creates folder "libraries" and adds target project (math.vcproj)
@@ -103,9 +125,5 @@ export(TARGETS optoforce FILE optoforceConfig.cmake)
 #file(COPY ${omd_SOURCE_DIR}/lib/linux/libOMD.so.1.5 DESTINATION ${CMAKE_BINARY_DIR}/bin/Debug )
 #file(COPY ${omd_SOURCE_DIR}/lib/linux/libOMD.so.1 DESTINATION ${CMAKE_BINARY_DIR}/bin/Debug )
 #file(COPY ${omd_SOURCE_DIR}/lib/linux/libOMD.so DESTINATION ${CMAKE_BINARY_DIR}/bin/Debug )
-
-
-message ("********************************************")
-message ("Test: ${optoforce_DIR}")
-message ("********************************************")
-message ("cmake management of ${PROJECT_NAME} done")
+message ("[${PROJECT_NAME}] ********************************************")
+message ("[${PROJECT_NAME}] cmake management of ${PROJECT_NAME} done")
