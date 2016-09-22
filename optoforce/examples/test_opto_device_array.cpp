@@ -1,6 +1,16 @@
-// MoreAdvancedExample.cpp : Defines the entry point for the console application.
-//
+/**
+ * @file   test_opto_device_array.cpp
+ * @author Anthony Remazeilles <anthony.remazeilles@tecnalia.com>
+ * @date   2016
+ *
+ * Copyright 2016 Tecnalia Research & Innovation.
+ * Distributed under the GNU GPL v3. For full terms see https://www.gnu.org/licenses/gpl.txt
+ *
+ * @brief Sample of data acquisition
+ *
+ */
 
+// MoreAdvancedExample.cpp : Defines the entry point for the console application.
 //#include "stdafx.h"
 #include <vector>
 #include <iostream>

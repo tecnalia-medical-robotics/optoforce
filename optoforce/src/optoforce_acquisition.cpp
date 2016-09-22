@@ -1,9 +1,10 @@
 /**
- * @file   optoforce_aquisition.cpp
+ * @file   optoforce_aquisition.hpp
  * @author Anthony Remazeilles <anthony.remazeilles@tecnalia.com>
  * @date   2016
  *
- * Copyright 2015 Tecnalia Research and Innovation.
+ * Copyright 2016 Tecnalia Research & Innovation.
+ * Distributed under the GNU GPL v3. For full terms see https://www.gnu.org/licenses/gpl.txt
  *
  * @brief connect to optoforce and acquire data to be stroed in a file.
  *

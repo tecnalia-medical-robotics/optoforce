@@ -1,3 +1,15 @@
+/**
+ * @file   optoforce_driver.hpp
+ * @author Anthony Remazeilles <anthony.remazeilles@tecnalia.com>
+ * @date   2016
+ *
+ * Copyright 2016 Tecnalia Research & Innovation.
+ * Distributed under the GNU GPL v3. For full terms see https://www.gnu.org/licenses/gpl.txt
+ *
+ * @brief Handler of a communicaiont stream with an Optoforce sensor.
+ *        Inspired from Optoforce example.
+ */
+
 #include <iostream>
 #include <string>
 #include "optoforce/optoforce_driver.hpp"
