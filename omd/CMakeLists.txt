@@ -1,15 +1,17 @@
+cmake_minimum_required (VERSION 2.6)
 project(omd)
 
 message ("********************************************")
 message ("starting cmake management of ${PROJECT_NAME}")
 include_directories(include)
-
+find_library(LIBOMD NAMES "OMD" PATHS "${CMAKE_CURRENT_LIST_DIR}/lib/linux")
 
 # Compatiblity with ROS
 if(DEFINED ENV{ROS_ROOT})
   message ("ROS defined -- using catkin ")
   find_package(catkin REQUIRED)
-  catkin_package(INCLUDE_DIRS include)
+  catkin_package(INCLUDE_DIRS include
+    LIBRARIES ${LIBOMD})
 else()
   message ("ROS not defined -- not using catkin ")
 endif()
