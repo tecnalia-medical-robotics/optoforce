@@ -54,7 +54,6 @@ cmake ../src/optoforce
 
 # build
 make
-
 ```
 
 ## Basic usage
@@ -65,8 +64,8 @@ As an exmple, run the following example
 # change directory to build/optoforce. Next command assumens current directory is build
 cd optoforce
 
-# launch example reading a configuration file
-
+# launch example. Before launching, be sure only 1 optoforce device is connected
+./bin_array_opto_force 1
 
 ```
 
