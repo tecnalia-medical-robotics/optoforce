@@ -8,6 +8,7 @@ include_directories(include)
 # Compatiblity with ROS
 if(DEFINED ENV{ROS_ROOT})
   message ("ROS defined -- using catkin ")
+  find_package(catkin REQUIRED)
   catkin_package(INCLUDE_DIRS include)
 else()
   message ("ROS not defined -- not using catkin ")
