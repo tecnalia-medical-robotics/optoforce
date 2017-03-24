@@ -43,5 +43,16 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # # This makes the project importable from the build directory
 # export(TARGETS omd FILE omdConfig.cmake)
 
+if(DEFINED ENV{ROS_ROOT})
+  install(DIRECTORY include/${PROJECT_NAME}/
+    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+    FILES_MATCHING PATTERN "*.h"
+    PATTERN ".svn" EXCLUDE
+  )
+  install(PROGRAMS ${LIBOMD}
+    DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  )
+endif()
+
 message ("********************************************")
 message ("cmake management of ${PROJECT_NAME} done")
